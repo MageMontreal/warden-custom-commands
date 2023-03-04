@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+[[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
+
+WARDEN_USAGE=$(cat <<EOF
+\033[33mUsage:\033[0m
+  import-db [--gzipped] [-f <file>.sql] [--file <file>.sql]
+
+\033[33mOptions:\033[0m
+  --gzipped                    The SQL file is compressed with gzip and should
+                               be decompressed prior to import.
+
+  -h, --help                   Display this help menu.
+
+  --file <file>.sql            Path to existing database dump file, must not
+  -f <file>.sql                be gzipped.
+EOF
+)

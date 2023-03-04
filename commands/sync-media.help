@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+[[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
+
+WARDEN_USAGE=$(cat <<EOF
+Download media files from a remote environment to the local file system.
+Extra options and arguments are passed through.
+
+\033[33mUsage:\033[0m
+  sync-media [-h|--help] [--cloud|--adobe-cloud]
+
+\033[33mOptions:\033[0m
+  --cloud, --adobe-cloud    Sync media from Adobe Commerce Cloud
+
+  -h, --help                Display this help menu
+
+\033[1;36mAdobe Commerce Cloud Specific Options\033[0m
+  --environment             Adobe Commerce Cloud environment to sync media
+                            from. Default: staging
+EOF
+)

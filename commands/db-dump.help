@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+[[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
+
+WARDEN_USAGE=$(cat <<EOF
+Dump remote database and download it locally and restore the database into the database container.
+
+\033[33mUsage:\033[0m
+  db-dump [--skip-restore] [-h|--help] [--cloud|--adobe-cloud [-s <environment>|--source <environment>]] [-f <file>.sql|--db-dump <file>.sql]
+
+\033[33mOptions:\033[0m
+  --cloud, --adobe-cloud       Retrieve database dump from Adobe Commerce Cloud
+
+  -h, --help                   Display this help menu.
+
+  --skip-restore               Only download a backup of the database, do NOT
+                               immediately begin to restore it.
+
+\033[1;36mAdobe Commerce Cloud Specific Options\033[0m
+  --db-dump <file>.sql         Path to existing database dump file, must not
+  -f <file>.sql                be gzipped.
+
+  --environment <environment>  Specific Adobe Commerce Cloud environment to
+  -e <environment>             run a database backup from. Default: staging
+
+EOF
+)

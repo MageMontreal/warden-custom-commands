@@ -1,0 +1,24 @@
+{
+    "name": "magemontreal/den-custom-commands",
+    "description": "Additional Den Commands",
+    "require": {
+        "magento/framework": "*"
+    },
+    "type": "library",
+    "version": "1.0.0",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "support": {
+        "email": "support@magemontreal.com"
+    },
+    "extra": {
+        "map": [
+            [
+                "commands",
+                ".warden/commands"
+            ]
+        ]
+    }
+}
