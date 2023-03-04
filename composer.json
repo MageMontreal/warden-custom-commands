@@ -4,7 +4,7 @@
     "require": {
         "magento/framework": "*"
     },
-    "type": "library",
+    "type": "magento2-component",
     "version": "1.0.0",
     "license": [
         "OSL-3.0",
