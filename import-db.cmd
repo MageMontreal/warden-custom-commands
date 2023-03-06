@@ -19,7 +19,6 @@ assertDockerRunning
 cd "${WARDEN_ENV_PATH}"
 
 DUMP_FILENAME=""
-GZIPPED=0
 PV=`which pv || which cat`
 
 while (( "$#" )); do
@@ -27,14 +26,6 @@ while (( "$#" )); do
         -f|--file)
             DUMP_FILENAME="$2"
             shift 2
-            ;;
-        -f=*|--file=*)
-            DUMP_FILENAME="${1#*=}"
-            shift
-            ;;
-        --gzipped)
-            GZIPPED=1
-            shift
             ;;
         -*|--*|*)
             error "Unrecognized argument '$1'"
@@ -55,13 +46,20 @@ if [[ -z "$DB_CONTAINER_ID" ]]; then
   fi
   launchedDatabaseContainer=1
 fi
+if [ ! -f "$DUMP_FILENAME" ]; then
+    echo -e "😮 \033[31mDump file nout found\033[0m"
+    exit 1
+fi
 
 echo -e "⌛ \033[1;32mDropping and initializing docker database ...\033[0m"
 den db connect -e 'drop database magento; create database magento character set = "utf8" collate = "utf8_general_ci";'
 
 echo -e "🔥 \033[1;32mImporting database ...\033[0m"
-[[ $GZIPPED = 1 ]] && $PV "$DUMP_FILENAME" | gunzip -c | den db import
-[[ $GZIPPED = 0 ]] && $PV "$DUMP_FILENAME" | den db import
+if gzip -t "$DUMP_FILENAME"; then
+    $PV "$DUMP_FILENAME" | gunzip -c | den db import
+else
+    $PV "$DUMP_FILENAME" | den db import
+fi
 
 [[ $launchedDatabaseContainer = 1 ]] && den env stop db
 

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+[[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
+
+WARDEN_USAGE=$(cat <<EOF
+Dump remote database and download it locally.
+
+\033[33mUsage:\033[0m
+  db-dump [-h|--help] [-e|--environment <environment>] [-f|--file <file>.sql.gz]
+
+\033[33mOptions:\033[0m
+  -h, --help                   Display this help menu.
+
+\033[33mArguments:\033[0m
+  -f, --file <file>.sql.gz     Output file.
+
+  -e,--environment <dev|production|staging>  Specific environment to run a database backup from. Default: staging.
+
+EOF
+)

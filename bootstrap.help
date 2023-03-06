@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+[[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
+
+WARDEN_USAGE=$(cat <<EOF
+\033[33mUsage:\033[0m
+  bootstrap [--no-pull] [--skip-db-import] [--skip-media-sync] [--db-dump <file>.sql.gz]
+
+\033[33mOptions:\033[0m
+  -h, --help        Display this help menu
+
+  --no-pull         When specified latest images will not be explicitly pulled prior
+                    to environment startup to facilitate use of locally built images
+
+  --skip-db-import  Skips over db import (assume db has already been imported).
+
+  --skip-media-sync Skips over media sync.
+
+\033[33mArguments:\033[0m
+
+  --db-dump <file>.sql.gz      expects path to .sql.gz file for import during init
+
+EOF
+)

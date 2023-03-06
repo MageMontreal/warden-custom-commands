@@ -9,12 +9,10 @@ Extra options and arguments are passed through.
   sync-media [-h|--help] [--cloud|--adobe-cloud]
 
 \033[33mOptions:\033[0m
-  --cloud, --adobe-cloud    Sync media from Adobe Commerce Cloud
+  -h, --help                                Display this help menu
 
-  -h, --help                Display this help menu
+\033[33mArguments:\033[0m
+  -e, --environment <dev|production|staging>  Environment to sync media from. Default: staging
 
-\033[1;36mAdobe Commerce Cloud Specific Options\033[0m
-  --environment             Adobe Commerce Cloud environment to sync media
-                            from. Default: staging
 EOF
 )
