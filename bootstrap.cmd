@@ -231,6 +231,14 @@ den env exec -T php-fpm bin/magento cache:flush
 
 :: Other config
 den env exec -T php-fpm bin/magento config:set --lock-env web/secure/offloader_header X-Forwarded-Proto
+den env exec -T php-fpm bin/magento config:set --lock-env klaviyo_reclaim_general/general/enable 0
+den env exec -T php-fpm bin/magento config:set --lock-env klaviyo_reclaim_webhook/klaviyo_webhooks/using_product_delete_before_webhook 0
+den env exec -T php-fpm bin/magento config:set paypal/wpp/sandbox_flag 1
+den env exec -T php-fpm bin/magento config:set web/cookie/cookie_domain "${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}"
+den env exec -T php-fpm bin/magento config:set payment/checkmo/active 1
+den env exec -T php-fpm bin/magento config:set payment/stripe_payments/active 0
+den env exec -T php-fpm bin/magento config:set payment/stripe_payments_basic/stripe_mode test
+
 
 if [[ "$WARDEN_VARNISH" ]]; then
     :: Configuring Varnish

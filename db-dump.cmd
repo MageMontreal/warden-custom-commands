@@ -35,7 +35,7 @@ function dumpPremise () {
     db_pass=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a=include \"'"$remote_dir"'/app/etc/env.php\"; print_r(\$a[\"db\"][\"connection\"][\"default\"][\"password\"]);"')
     db_name=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a=include \"'"$remote_dir"'/app/etc/env.php\"; print_r(\$a[\"db\"][\"connection\"][\"default\"][\"dbname\"]);"')
 
-    db_dump="mysqldump --no-tablespaces -h$db_host -u$db_user -p'$db_pass' $db_name --triggers | sed 's/\/\*[^*]*DEFINER=[^*]*\*\///g' | gzip"
+    db_dump="export MYSQL_PWD=${db_pass}; mysqldump --no-tablespaces -h$db_host -u$db_user $db_name --triggers | sed 's/\/\*[^*]*DEFINER=[^*]*\*\///g' | gzip"
     echo -e "⌛ \033[1;32mDumping \033[33m${db_name}\033[1;32m database from \033[33m${ssh_host}\033[1;32m...\033[0m"
     ssh -p $ssh_port $ssh_user@$ssh_host "$db_dump" > $DUMP_FILENAME
 }
