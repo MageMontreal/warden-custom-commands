@@ -109,7 +109,7 @@ if [[ $OSTYPE =~ ^darwin ]] && ! which mutagen >/dev/null 2>&1 && which brew >/d
 fi
 
 ## check for presence of host machine dependencies
-for DEP_NAME in warden mutagen docker-compose pv; do
+for DEP_NAME in den mutagen docker-compose pv; do
   if [[ "${DEP_NAME}" = "mutagen" ]] && [[ ! $OSTYPE =~ ^darwin ]]; then
     continue
   fi
@@ -120,11 +120,11 @@ for DEP_NAME in warden mutagen docker-compose pv; do
   fi
 done
 
-## verify warden version constraint
+## verify Den version constraint
 WARDEN_VERSION=$(den version 2>/dev/null) || true
 WARDEN_REQUIRE=1.0.0-beta.1
 if ! test $(version ${WARDEN_VERSION}) -ge $(version ${WARDEN_REQUIRE}); then
-  error "Warden ${WARDEN_REQUIRE} or greater is required (version ${WARDEN_VERSION} is installed)"
+  error "Den ${WARDEN_REQUIRE} or greater is required (version ${WARDEN_VERSION} is installed)"
   INIT_ERROR=1
 fi
 
