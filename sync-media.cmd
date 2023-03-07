@@ -22,10 +22,10 @@ function dumpCloud () {
 }
 
 function dumpPremise () {
-    eval "ssh_host=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_HOST"}"
-    eval "ssh_user=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_USER"}"
-    eval "ssh_port=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_PORT"}"
-    eval "remote_dir=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_PATH"}"
+    eval "ssh_host=\${"REMOTE_${DUMP_SOURCE_VAR}_HOST"}"
+    eval "ssh_user=\${"REMOTE_${DUMP_SOURCE_VAR}_USER"}"
+    eval "ssh_port=\${"REMOTE_${DUMP_SOURCE_VAR}_PORT"}"
+    eval "remote_dir=\${"REMOTE_${DUMP_SOURCE_VAR}_PATH"}"
 
     echo -e "⌛ \033[1;32mDownloading files from ${ssh_host}\033[0m ..."
     rsync -azvP -e 'ssh -p '"$ssh_port" \
@@ -45,7 +45,7 @@ while (( "$#" )); do
     case "$1" in
         -e|--environment)
             DUMP_SOURCE_VAR=$(echo "${2:-staging}" | tr '[:lower:]' '[:upper:]')
-            DUMP_ENV="WARDEN_ENV_${DUMP_SOURCE_VAR}_HOST"
+            DUMP_ENV="REMOTE_${DUMP_SOURCE_VAR}_HOST"
 
             if [ -z ${!DUMP_ENV+x} ]; then
                 error "Invalid environment '${DUMP_SOURCE}'"

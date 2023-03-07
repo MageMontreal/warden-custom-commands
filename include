@@ -12,6 +12,7 @@ WARDEN_ENV_PATH="$(locateEnvPath)" || exit $?
 
 loadEnvConfig "${WARDEN_ENV_PATH}" || exit $?
 eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^CLOUD_")"
+eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^REMOTE_")"
 
 ## verify Den version constraint
 DEN_VERSION=$(den version 2>/dev/null) || true

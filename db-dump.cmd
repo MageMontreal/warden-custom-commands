@@ -25,10 +25,10 @@ function dumpCloud () {
 }
 
 function dumpPremise () {
-    eval "ssh_host=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_HOST"}"
-    eval "ssh_user=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_USER"}"
-    eval "ssh_port=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_PORT"}"
-    eval "remote_dir=\${"WARDEN_ENV_${DUMP_SOURCE_VAR}_PATH"}"
+    eval "ssh_host=\${"REMOTE_${DUMP_SOURCE_VAR}_HOST"}"
+    eval "ssh_user=\${"REMOTE_${DUMP_SOURCE_VAR}_USER"}"
+    eval "ssh_port=\${"REMOTE_${DUMP_SOURCE_VAR}_PORT"}"
+    eval "remote_dir=\${"REMOTE_${DUMP_SOURCE_VAR}_PATH"}"
 
     db_host=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a=include \"'"$remote_dir"'/app/etc/env.php\"; print_r(\$a[\"db\"][\"connection\"][\"default\"][\"host\"]);"')
     db_user=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a=include \"'"$remote_dir"'/app/etc/env.php\"; print_r(\$a[\"db\"][\"connection\"][\"default\"][\"username\"]);"')
@@ -52,7 +52,7 @@ while (( "$#" )); do
             ;;
         -e|--environment)
             DUMP_SOURCE_VAR=$(echo "${2:-staging}" | tr '[:lower:]' '[:upper:]')
-            DUMP_ENV="WARDEN_ENV_${DUMP_SOURCE_VAR}_HOST"
+            DUMP_ENV="REMOTE_${DUMP_SOURCE_VAR}_HOST"
 
             if [ -z ${!DUMP_ENV+x} ]; then
                 error "Invalid environment '${DUMP_SOURCE}'"
