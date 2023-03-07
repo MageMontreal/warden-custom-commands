@@ -190,8 +190,7 @@ fi
 :: Configuring application
 den env exec -T php-fpm bin/magento app:config:import
 
-
-if [[ "$WARDEN_OPENSEARCH" ]] || [[ "$WARDEN_ELASTICSEARCH" ]]; then
+if [[ "$WARDEN_ELASTICSEARCH" -eq "1" ]] || [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
     :: Configuring ElasticSearch
     ELASTICSEARCH_HOSTNAME="elasticsearch"
     if [[ "$WARDEN_OPENSEARCH" ]]; then
@@ -206,7 +205,7 @@ if [[ "$WARDEN_OPENSEARCH" ]] || [[ "$WARDEN_ELASTICSEARCH" ]]; then
     den env exec -T php-fpm bin/magento config:set --lock-env catalog/search/elasticsearch7_server_timeout 15
 fi
 
-if [[ "$WARDEN_REDIS" ]]; then
+if [[ "$WARDEN_REDIS" -eq "1" ]]; then
     :: Configuring Redis
     den env exec -T php-fpm bin/magento setup:config:set --cache-backend=redis --cache-backend-redis-server=redis --cache-backend-redis-db=0 --cache-backend-redis-port=6379 --no-interaction
     den env exec -T php-fpm bin/magento setup:config:set --page-cache=redis --page-cache-redis-server=redis --page-cache-redis-db=1 --page-cache-redis-port=6379 --no-interaction
@@ -230,22 +229,24 @@ den env exec -T php-fpm bin/magento cache:flush
 
 
 :: Other config
-den env exec -T php-fpm bin/magento config:set --lock-env web/secure/offloader_header X-Forwarded-Proto
-den env exec -T php-fpm bin/magento config:set --lock-env klaviyo_reclaim_general/general/enable 0
-den env exec -T php-fpm bin/magento config:set --lock-env klaviyo_reclaim_webhook/klaviyo_webhooks/using_product_delete_before_webhook 0
-den env exec -T php-fpm bin/magento config:set paypal/wpp/sandbox_flag 1
-den env exec -T php-fpm bin/magento config:set web/cookie/cookie_domain "${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}"
-den env exec -T php-fpm bin/magento config:set payment/checkmo/active 1
-den env exec -T php-fpm bin/magento config:set payment/stripe_payments/active 0
-den env exec -T php-fpm bin/magento config:set payment/stripe_payments_basic/stripe_mode test
+den env exec -T php-fpm bin/magento config:set --lock-env web/secure/offloader_header X-Forwarded-Proto || true
+den env exec -T php-fpm bin/magento config:set --lock-env klaviyo_reclaim_general/general/enable 0 || true
+den env exec -T php-fpm bin/magento config:set --lock-env klaviyo_reclaim_webhook/klaviyo_webhooks/using_product_delete_before_webhook 0 || true
+den env exec -T php-fpm bin/magento config:set paypal/wpp/sandbox_flag 1 || true
+den env exec -T php-fpm bin/magento config:set web/cookie/cookie_domain "${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}" || true
+den env exec -T php-fpm bin/magento config:set payment/checkmo/active 1 || true
+den env exec -T php-fpm bin/magento config:set payment/stripe_payments/active 0 || true
+den env exec -T php-fpm bin/magento config:set payment/stripe_payments_basic/stripe_mode test || true
 
 
-if [[ "$WARDEN_VARNISH" ]]; then
+if [[ "$WARDEN_VARNISH" -eq "1" ]]; then
     :: Configuring Varnish
     den env exec -T php-fpm bin/magento config:set --lock-env system/full_page_cache/varnish/backend_host varnish
-    den env exec -T php-fpm bin/magento config:set --lock-env system/full_page_cache/varnish/backend_post 80
+    den env exec -T php-fpm bin/magento config:set --lock-env system/full_page_cache/varnish/backend_port 80
     den env exec -T php-fpm bin/magento config:set --lock-env system/full_page_cache/caching_application 2
     den env exec -T php-fpm bin/magento config:set --lock-env system/full_page_cache/ttl 604800
+else
+    den env exec -T php-fpm bin/magento config:set --lock-env system/full_page_cache/caching_application 1
 fi
 
 :: Flushing cache

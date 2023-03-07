@@ -14,6 +14,11 @@ function dumpCloud () {
         --exclude 'export' \
         --exclude 'importexport' \
         --exclude 'captcha' \
+        --exclude '*.gz' \
+        --exclude '*.zip' \
+        --exclude '*.tar' \
+        --exclude '*.7z' \
+        --exclude '*.sql' \
         --mount=pub/media/ \
         --target=pub/media/ \
         -y \
@@ -36,6 +41,11 @@ function dumpPremise () {
         --exclude 'export' \
         --exclude 'importexport' \
         --exclude 'captcha' \
+        --exclude '*.gz' \
+        --exclude '*.zip' \
+        --exclude '*.tar' \
+        --exclude '*.7z' \
+        --exclude '*.sql' \
         $ssh_user@$ssh_host:$remote_dir/pub/media/ pub/media/
 }
 
