@@ -49,7 +49,7 @@ function dumpPremise () {
         $ssh_user@$ssh_host:$remote_dir/pub/media/ pub/media/
 }
 
-DUMP_SOURCE="${DUMP_SOURCE:-STAGING}"
+DUMP_SOURCE="${DUMP_SOURCE:-staging}"
 
 while (( "$#" )); do
     case "$1" in
@@ -63,11 +63,6 @@ while (( "$#" )); do
 
             DUMP_HOST=${!DUMP_ENV}
 
-            if [[ "${DUMP_HOST}" = "CLOUD" ]]; then
-                dumpCloud
-            else
-                dumpPremise
-            fi
             shift 2
             ;;
         -*|--*|*)
@@ -76,3 +71,11 @@ while (( "$#" )); do
             ;;
     esac
 done
+
+if [[ "${DUMP_HOST}" ]]; then
+    if [[ "${DUMP_HOST}" = "CLOUD" ]]; then
+        dumpCloud
+    else
+        dumpPremise
+    fi
+fi

@@ -9,6 +9,8 @@ DB_DUMP=
 DB_IMPORT=1
 AUTO_PULL=1
 MEDIA_SYNC=1
+COMPOSER_INSTALL=1
+BASE_ENV=staging
 URL_FRONT="https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/"
 URL_ADMIN="https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/admin/"
 
@@ -24,9 +26,18 @@ while (( "$#" )); do
             MEDIA_SYNC=
             shift
             ;;
+        --skip-composer-install)
+            COMPOSER_INSTALL=
+            shift
+            ;;
         --db-dump)
             shift
             DB_DUMP="$1"
+            shift
+            ;;
+        -e|--environment)
+            shift
+            BASE_ENV=$(echo "$1" | tr '[:upper:]' '[:lower:]')
             shift
             ;;
         --no-pull)
@@ -165,20 +176,21 @@ den env up -d
 ## wait for mariadb to start listening for connections
 den shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
 
-:: Installing dependencies
-if [[ ${COMPOSER_VERSION} == 1 ]]; then
-  den env exec -T php-fpm bash \
-    -c '[[ $(composer -V | cut -d\  -f3 | cut -d. -f1) == 2 ]] || composer global require hirak/prestissimo'
+if [[ $COMPOSER_INSTALL ]]; then
+    :: Installing dependencies
+    if [[ ${COMPOSER_VERSION} == 1 ]]; then
+      den env exec -T php-fpm bash \
+        -c '[[ $(composer -V | cut -d\  -f3 | cut -d. -f1) == 2 ]] || composer global require hirak/prestissimo'
+    fi
+    den env exec -T php-fpm composer install
 fi
-
-den env exec -T php-fpm composer install
 
 ## import database only if --skip-db-import is not specified
 if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
-        DB_DUMP="${WARDEN_ENV_NAME}_staging-`date +%Y%m%dT%H%M%S`.sql.gz"
+        DB_DUMP="${WARDEN_ENV_NAME}_${BASE_ENV}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
-        den db-dump --environment staging --file "${DB_DUMP}"
+        den db-dump --environment ${BASE_ENV} --file "${DB_DUMP}"
     fi
 
     if [[ "$DB_DUMP" ]]; then
@@ -227,7 +239,6 @@ den env exec -T php-fpm bin/magento deploy:mode:set -s developer
 den env exec -T php-fpm bin/magento cache:flush
 #den env exec -T php-fpm bin/magento cache:disable block_html full_page
 
-
 :: Other config
 den env exec -T php-fpm bin/magento config:set --lock-env web/secure/offloader_header X-Forwarded-Proto || true
 den env exec -T php-fpm bin/magento config:set --lock-env klaviyo_reclaim_general/general/enable 0 || true
@@ -237,7 +248,6 @@ den env exec -T php-fpm bin/magento config:set web/cookie/cookie_domain "${TRAEF
 den env exec -T php-fpm bin/magento config:set payment/checkmo/active 1 || true
 den env exec -T php-fpm bin/magento config:set payment/stripe_payments/active 0 || true
 den env exec -T php-fpm bin/magento config:set payment/stripe_payments_basic/stripe_mode test || true
-
 
 if [[ "$WARDEN_VARNISH" -eq "1" ]]; then
     :: Configuring Varnish
@@ -260,15 +270,13 @@ den env exec -T php-fpm bin/magento admin:user:create \
     --admin-lastname=Admin \
     --admin-email="magento2docker@${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}"
 
+if [[ $MEDIA_SYNC ]]; then
+    :: Sync Media
+    den sync-media -e ${BASE_ENV}
+fi
+
 echo "Configuration done."
 echo "Frontend: https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/"
 echo "Admin:    https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/admin"
 echo "Username: magento2docker"
 echo "Password: Admin123"
-
-if [[ $MEDIA_SYNC ]]; then
-    :: Sync Media
-    den sync-media -e staging
-fi
-
-
