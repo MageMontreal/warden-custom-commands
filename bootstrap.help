@@ -3,7 +3,7 @@
 
 WARDEN_USAGE=$(cat <<EOF
 \033[33mUsage:\033[0m
-  bootstrap [--no-pull] [--skip-db-import] [--skip-media-sync] [--db-dump <file>.sql.gz]
+  bootstrap [-h|--help] [--no-pull] [--skip-db-import] [--skip-media-sync] [--skip-composer-install] [--db-dump=<file>] [--environment=<environment>]
 
 \033[33mOptions:\033[0m
   -h, --help        Display this help menu
@@ -11,13 +11,17 @@ WARDEN_USAGE=$(cat <<EOF
   --no-pull         When specified latest images will not be explicitly pulled prior
                     to environment startup to facilitate use of locally built images
 
-  --skip-db-import  Skips over db import (assume db has already been imported).
+  --skip-db-import  Skips over db import (assume db has already been imported)
 
-  --skip-media-sync Skips over media sync.
+  --skip-media-sync Skips over media sync
+
+  --skip-composer-install Skips composer install
 
 \033[33mArguments:\033[0m
 
-  --db-dump <file>.sql.gz      expects path to .sql.gz file for import during init
+  --db-dump=<file>      Path to existing database dump file. Can be gzipped
+
+  --environment=<dev|production|staging>  Specific environment to use as base for DB and medias. Default: staging
 
 EOF
 )

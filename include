@@ -14,14 +14,6 @@ loadEnvConfig "${WARDEN_ENV_PATH}" || exit $?
 eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^CLOUD_")"
 eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^REMOTE_")"
 
-## verify Den version constraint
-DEN_VERSION=$(den version 2>/dev/null) || true
-DEN_REQUIRE=1.0.0
-if ! test $(version ${DEN_VERSION}) -ge $(version ${DEN_REQUIRE}); then
-  error "Den ${DEN_REQUIRE} or greater is required (version ${DEN_VERSION} is installed)"
-  exit 3
-fi
-
 assertDockerRunning
 
 cd "${WARDEN_ENV_PATH}"

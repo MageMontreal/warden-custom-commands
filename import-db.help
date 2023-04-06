@@ -3,11 +3,11 @@
 
 WARDEN_USAGE=$(cat <<EOF
 \033[33mUsage:\033[0m
-  import-db [-f|--file <file>.sql]
+  import-db [-h|--help] [--file=<file>]
 
 \033[33mOptions:\033[0m
   -h, --help                   Display this help menu.
 
-  -f, --file <file>.sql        Path to existing database dump file. Can be gzipped.
+  --file=<file>        Path to existing database dump file. Can be gzipped.
 EOF
 )

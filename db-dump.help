@@ -5,15 +5,15 @@ WARDEN_USAGE=$(cat <<EOF
 Dump remote database and download it locally.
 
 \033[33mUsage:\033[0m
-  db-dump [-h|--help] [-e|--environment <environment>] [-f|--file <file>.sql.gz]
+  db-dump [-h|--help] [--environment=<environment>] [--file=<file>]
 
 \033[33mOptions:\033[0m
-  -h, --help                   Display this help menu.
+  -h, --help                   Display this help menu
 
 \033[33mArguments:\033[0m
-  -f, --file <file>.sql.gz     Output file.
+  --file=<file>   Output file.
 
-  -e,--environment <dev|production|staging>  Specific environment to run a database backup from. Default: staging.
+  --environment=<dev|production|staging>  Specific environment to run a database backup from. Default: staging
 
 EOF
 )

@@ -1,34 +1,22 @@
 #!/usr/bin/env bash
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
 
-set -euo pipefail
+SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-WARDEN_ENV_PATH="$(locateEnvPath)" || exit $?
-loadEnvConfig "${WARDEN_ENV_PATH}" || exit $?
-
-## verify Den version constraint
-DEN_VERSION=$(den version 2>/dev/null) || true
-DEN_REQUIRE=1.0.0
-if ! test $(version ${DEN_VERSION}) -ge $(version ${DEN_REQUIRE}); then
-  error "Den ${DEN_REQUIRE} or greater is required (version ${DEN_VERSION} is installed)"
-  exit 3
-fi
-
-assertDockerRunning
-
-cd "${WARDEN_ENV_PATH}"
+source "${SUBCOMMAND_DIR}"/include
 
 DUMP_FILENAME=""
+SET_CONFIG=""
 PV=`which pv || which cat`
 
 while (( "$#" )); do
     case "$1" in
-        -f|--file)
-            DUMP_FILENAME="$2"
-            shift 2
+        --file=*)
+            DUMP_FILENAME="${1#*=}"
+            shift
             ;;
         -*|--*|*)
-            error "Unrecognized argument '$1'"
+            echo "Unrecognized argument '$1'"
             exit 2
             ;;
     esac
@@ -47,7 +35,7 @@ if [[ -z "$DB_CONTAINER_ID" ]]; then
   launchedDatabaseContainer=1
 fi
 if [ ! -f "$DUMP_FILENAME" ]; then
-    echo -e "😮 \033[31mDump file nout found\033[0m"
+    echo -e "😮 \033[31mDump file not found\033[0m"
     exit 1
 fi
 
