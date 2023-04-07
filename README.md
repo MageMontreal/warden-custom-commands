@@ -1,0 +1,48 @@
+# Den Custom commands
+
+Provides additional commands to simplify local installation.
+
+### Installation
+Clone this repository in `~/.den/commands` to install it globally (recommended), or locally per project in `[project directory]/.den/commands`.
+
+### Configuration
+In the project `.env` (after `den env-init`), add and configure these values:
+
+```
+REMOTE_PROD_HOST=project.com
+REMOTE_PROD_USER=user
+REMOTE_PROD_PORT=22
+REMOTE_PROD_PATH=/var/www/html
+
+REMOTE_STAGING_HOST=staging.project.com
+REMOTE_STAGING_USER=user
+REMOTE_STAGING_PORT=22
+REMOTE_STAGING_PATH=/var/www/html
+
+REMOTE_DEV_HOST=dev.project.com
+REMOTE_DEV_USER=user
+REMOTE_DEV_PORT=22
+REMOTE_DEV_PATH=/var/www/html
+```
+
+### Usage
+
+For all commands, execute `den <command> -h` to see the details of all options.
+
+`den bootstrap`  
+* Create and configure den environment
+* Download and import database dump from selected remote
+* Download medias from selected remote
+* Install composer dependencies
+* Configure Redis, Varnish and ElasticSearch if applicable
+* Other Magento config like domain, switch some payment methods to sandbox
+* Create admin user
+
+`den db-dump`
+* Dump DB from selected remote
+
+`den import-db`
+* Import DB. File **must** be specified with option `--file`
+
+`den sync-media`
+* Download medias from selected remote
