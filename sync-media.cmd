@@ -5,12 +5,6 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 source "${SUBCOMMAND_DIR}"/include
 
-EXCLUDE=( 'catalog/product/cache' 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' )
-exclude_opts=()
-for item in "${EXCLUDE[@]}"; do
-    exclude_opts+=( --exclude="$item" )
-done
-
 function dumpCloud () {
     echo -e "\033[1;32mDownloading files from \033[33mAdobe Commerce Cloud \033[1;36m${DUMP_SOURCE}\033[0m ..."
     magento-cloud mount:download -p "$CLOUD_PROJECT" \
@@ -37,11 +31,16 @@ function dumpPremise () {
 
 DUMP_SOURCE_VAR=STAGING
 DUMP_SOURCE="${DUMP_SOURCE:-staging}"
+DUMP_INCLUDE_PRODUCT=0
 
 while (( "$#" )); do
     case "$1" in
         --environment=*)
             DUMP_SOURCE_VAR=$(echo "${1#*=}" | tr '[:lower:]' '[:upper:]')
+            shift
+            ;;
+        --include-product)
+            DUMP_INCLUDE_PRODUCT=1
             shift
             ;;
         *)
@@ -56,6 +55,19 @@ if [ -z ${!DUMP_ENV+x} ]; then
     echo "Invalid environment '${DUMP_SOURCE}'"
     exit 2
 fi
+
+EXCLUDE=( 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' )
+
+if [[ "$DUMP_INCLUDE_PRODUCT" -eq "1" ]]; then
+  EXCLUDE+=('catalog/product/cache')
+else
+  EXCLUDE+=('catalog/product')
+fi
+
+exclude_opts=()
+for item in "${EXCLUDE[@]}"; do
+    exclude_opts+=( --exclude="$item" )
+done
 
 DUMP_HOST=${!DUMP_ENV}
 
