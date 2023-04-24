@@ -6,9 +6,9 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/include
 
 function dumpCloud () {
-    echo -e "\033[1;32mDownloading files from \033[33mAdobe Commerce Cloud \033[1;36m${DUMP_SOURCE}\033[0m ..."
+    echo -e "\033[1;32mDownloading files from \033[33mAdobe Commerce Cloud \033[1;36m${DUMP_HOST}\033[0m ..."
     magento-cloud mount:download -p "$CLOUD_PROJECT" \
-        --environment="$DUMP_SOURCE" \
+        --environment="$DUMP_HOST" \
         "${exclude_opts[@]}" \
         --mount=pub/media/ \
         --target=pub/media/ \
@@ -29,14 +29,13 @@ function dumpPremise () {
         $ssh_user@$ssh_host:$remote_dir/pub/media/ pub/media/
 }
 
-DUMP_SOURCE_VAR=STAGING
-DUMP_SOURCE="${DUMP_SOURCE:-staging}"
+DUMP_SOURCE=staging
 DUMP_INCLUDE_PRODUCT=0
 
 while (( "$#" )); do
     case "$1" in
         --environment=*)
-            DUMP_SOURCE_VAR=$(echo "${1#*=}" | tr '[:lower:]' '[:upper:]')
+            DUMP_SOURCE="${1#*=}"
             shift
             ;;
         --include-product)
@@ -50,7 +49,9 @@ while (( "$#" )); do
     esac
 done
 
+DUMP_SOURCE_VAR=$(echo "$DUMP_SOURCE" | tr '[:lower:]' '[:upper:]')
 DUMP_ENV="REMOTE_${DUMP_SOURCE_VAR}_HOST"
+
 if [ -z ${!DUMP_ENV+x} ]; then
     echo "Invalid environment '${DUMP_SOURCE}'"
     exit 2
@@ -72,9 +73,9 @@ done
 DUMP_HOST=${!DUMP_ENV}
 
 if [[ "${DUMP_HOST}" ]]; then
-    if [[ "${DUMP_HOST}" = "CLOUD" ]]; then
-        dumpCloud
-    else
+    if [ -z "$CLOUD_PROJECT" ]; then
         dumpPremise
+    else
+        dumpCloud
     fi
 fi

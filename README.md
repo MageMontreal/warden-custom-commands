@@ -25,6 +25,12 @@ REMOTE_DEV_PORT=22
 REMOTE_DEV_PATH=/var/www/html
 ```
 
+#### Adobe Commerce Cloud
+The `REMOTE_[env]_HOST` variables must be set with the name of the environment. All other variables are not used and can be removed.  
+
+Additionally, you must have this variable:  
+`CLOUD_PROJECT=[projectId]`
+
 ### Usage
 
 For all commands, execute `den <command> -h` to see the details of all options.

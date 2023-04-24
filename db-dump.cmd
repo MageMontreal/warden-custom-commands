@@ -11,15 +11,15 @@ function dumpCloud () {
     echo -e "🤔 \033[1;34mChecking which database relationship to use ...\033[0m"
     EXISTS=$(magento-cloud environment:relationships \
         --project="$CLOUD_PROJECT" \
-        --environment="$DUMP_SOURCE" \
+        --environment="$DUMP_HOST" \
         --property=database-slave.0.host \
         2>/dev/null || true)
     [[ -z "$EXISTS" ]] && RELATIONSHIP=database
 
-    echo -e "⌛ \033[1;32mDumping \033[33m${DUMP_SOURCE}\033[1;32m database ...\033[0m"
+    echo -e "⌛ \033[1;32mDumping \033[33m${DUMP_HOST}\033[1;32m database ...\033[0m"
     magento-cloud db:dump \
         --project="$CLOUD_PROJECT" \
-        --environment="$DUMP_SOURCE" \
+        --environment="$DUMP_HOST" \
         --relationship=$RELATIONSHIP \
         --gzip \
         --file "$DUMP_FILENAME"
@@ -44,7 +44,7 @@ function dumpPremise () {
 
 DUMP_SOURCE=staging
 DUMP_HOST=STAGING
-DUMP_FILENAME="${WARDEN_ENV_NAME}_${DUMP_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
+DUMP_FILENAME=
 
 while (( "$#" )); do
     case "$1" in
@@ -53,7 +53,7 @@ while (( "$#" )); do
             shift
             ;;
         --environment=*)
-            DUMP_SOURCE_VAR=$(echo "${1#*=}" | tr '[:lower:]' '[:upper:]')
+            DUMP_SOURCE="${1#*=}"
             shift
             ;;
         *)
@@ -63,18 +63,24 @@ while (( "$#" )); do
     esac
 done
 
+DUMP_SOURCE_VAR=$(echo "$DUMP_SOURCE" | tr '[:lower:]' '[:upper:]')
 DUMP_ENV="REMOTE_${DUMP_SOURCE_VAR}_HOST"
+
 if [ -z ${!DUMP_ENV+x} ]; then
     echo "Invalid environment '${DUMP_SOURCE}'"
     exit 2
 fi
 
+if [ -z "$DUMP_FILENAME" ]; then
+    DUMP_FILENAME="${WARDEN_ENV_NAME}_${DUMP_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
+fi
+
 DUMP_HOST=${!DUMP_ENV}
 
 if [[ "${DUMP_HOST}" ]]; then
-    if [[ "${DUMP_HOST}" = "CLOUD" ]]; then
-        dumpCloud
-    else
+    if [ -z "$CLOUD_PROJECT" ]; then
         dumpPremise
+    else
+        dumpCloud
     fi
 fi

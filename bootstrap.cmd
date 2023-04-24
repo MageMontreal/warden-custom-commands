@@ -192,8 +192,6 @@ if [[ ${DB_IMPORT} ]]; then
     fi
 fi
 
-den set-config
-
 if [[ "$WARDEN_VARNISH" -eq "1" ]]; then
     :: Configuring Varnish
     den env exec php-fpm bin/magento config:set --lock-env system/full_page_cache/varnish/backend_host varnish
@@ -229,7 +227,7 @@ if [[ "$WARDEN_REDIS" -eq "1" ]]; then
 fi
 
 :: Configuring application
-
+den set-config
 den env exec php-fpm bin/magento config:set --lock-env web/unsecure/base_url "${URL_FRONT}"
 den env exec php-fpm bin/magento config:set --lock-env web/secure/base_url "${URL_FRONT}"
 

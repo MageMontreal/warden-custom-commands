@@ -15,7 +15,7 @@ while (( "$#" )); do
             DUMP_FILENAME="${1#*=}"
             shift
             ;;
-        -*|--*|*)
+        *)
             echo "Unrecognized argument '$1'"
             exit 2
             ;;
@@ -35,7 +35,7 @@ if [[ -z "$DB_CONTAINER_ID" ]]; then
   launchedDatabaseContainer=1
 fi
 if [ ! -f "$DUMP_FILENAME" ]; then
-    echo -e "😮 \033[31mDump file not found\033[0m"
+    echo -e "😮 \033[31mDump file $DUMP_FILENAME not found\033[0m"
     exit 1
 fi
 
