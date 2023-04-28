@@ -73,7 +73,7 @@ done
 DUMP_HOST=${!DUMP_ENV}
 
 if [[ "${DUMP_HOST}" ]]; then
-    if [ -z "$CLOUD_PROJECT" ]; then
+    if [ -z ${CLOUD_PROJECT+x} ]; then
         dumpPremise
     else
         dumpCloud
