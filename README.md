@@ -53,3 +53,7 @@ For all commands, execute `den <command> -h` to see the details of all options.
 `den sync-media`
 * Download medias from selected remote
 * Product images are not downloaded by default (use `--include-product`)
+
+`den open`
+* Open DB tunnel to local or remote environments
+* SSH to local or remote environments

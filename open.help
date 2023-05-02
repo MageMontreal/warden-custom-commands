@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+[[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
+
+WARDEN_USAGE=$(cat <<EOF
+Open tunnel to services
+
+\033[33mUsage:\033[0m
+  open [-h|--help] [db|shell] [--environment=<environment>|-e <environment>]
+
+\033[33mOptions:\033[0m
+  -h, --help                   Display this help menu
+
+\033[33mArguments:\033[0m
+  -e|--environment=<local|dev|production|staging>  Specific environment to use. Default: local
+
+EOF
+)
