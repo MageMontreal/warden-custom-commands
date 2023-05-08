@@ -57,3 +57,4 @@ For all commands, execute `den <command> -h` to see the details of all options.
 `den open`
 * Open DB tunnel to local or remote environments
 * SSH to local or remote environments
+* Show SFTP link you can use in your SFTP client

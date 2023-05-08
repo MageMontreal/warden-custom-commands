@@ -16,25 +16,6 @@ eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^REMOTE_")"
 
 assertDockerRunning
 
-#OPEN=$(which xdg-open || which open || which start) || true
-
-function rawurlencode() {
-  local string="${1}"
-  local strlen=${#string}
-  local encoded=""
-  local pos c o
-
-  for (( pos=0 ; pos<strlen ; pos++ )); do
-     c=${string:$pos:1}
-     case "$c" in
-        [-_.~a-zA-Z0-9] ) o="${c}" ;;
-        * )               printf -v o '%%%02x' "'$c"
-     esac
-     encoded+="${o}"
-  done
-  echo "${encoded}"    # You can either set a return variable (FASTER)
-}
-
 function array_contains() {
     local array="$1[@]"
     local seeking=$2
@@ -46,6 +27,15 @@ function array_contains() {
         fi
     done
     echo $in
+}
+
+function open_link() {
+    if [[ "$OPEN_CL" -eq "1" ]]; then
+        OPEN=$(which xdg-open || which open || which start) || true
+        if [ -n "$OPEN" ]; then
+            $OPEN "${1}"
+        fi
+    fi
 }
 
 function findLocalPort() {
@@ -70,7 +60,6 @@ function remote_db () {
     local db_pass=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
     local db_name=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
 
-    #db_pass=$(rawurlencode $db_pass)
     DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name?compression=1"
 
     echo -e "SSH tunnel opened to \033[32m$db_name\033[0m at: \033[32m$DB\033[0m"
@@ -78,9 +67,7 @@ function remote_db () {
     echo "Quitting this command (with Ctrl+C or equivalent) will close the tunnel."
     echo
 
-    #if [ -n "$OPEN" ]; then
-    #    $OPEN $DB
-    #fi
+    open_link $DB
 
     ssh -L $LOCAL_PORT:"$db_host":3306 -N -p $ssh_port $ssh_user@$ssh_host || true
 }
@@ -95,11 +82,9 @@ function local_db() {
     echo "Quitting this command (with Ctrl+C or equivalent) will close the tunnel."
     echo
 
-    #if [ -n "$OPEN" ]; then
-    #    $OPEN $DB
-    #fi
+    open_link $DB
 
-    ssh -L "$LOCAL_PORT":"$DB_ENV_NAME":3306 -N -p 2222 user@tunnel.den.test || true
+    ssh -L "$LOCAL_PORT":"$DB_ENV_NAME":3306 -N -p 2222 -i ~/.den/tunnel/ssh_key user@tunnel.den.test || true
 }
 function cloud_db() {
     CLOUD_ENV=${!ENV_HOST}
@@ -120,8 +105,27 @@ function cloud_shell() {
     CLOUD_ENV=${!ENV_HOST}
     magento-cloud ssh -e "$CLOUD_ENV" -p "$CLOUD_PROJECT"
 }
+function local_sftp() {
+    echo "Not Supported."
+}
+function remote_sftp() {
+    eval "ssh_host=\${"REMOTE_${ENV_VAR}_HOST"}"
+    eval "ssh_user=\${"REMOTE_${ENV_VAR}_USER"}"
+    eval "ssh_port=\${"REMOTE_${ENV_VAR}_PORT"}"
+
+    SFTP_LINK="sftp://$ssh_user@$ssh_host:$ssh_port"
+    echo -e "SFTP to \033[32m$ENV_VAR\033[0m at: \033[32m$SFTP_LINK\033[0m"
+    open_link $SFTP_LINK
+}
+function cloud_sftp() {
+    CLOUD_ENV=${!ENV_HOST}
+    SFTP_LINK="sftp://$(magento-cloud ssh --pipe -e "$CLOUD_ENV" -p "$CLOUD_PROJECT")"
+    echo -e "SFTP to \033[32m$CLOUD_ENV\033[0m at: \033[32m$SFTP_LINK\033[0m"
+    open_link $SFTP_LINK
+}
 
 ENV_VAR="LOCAL"
+OPEN_CL=0
 
 while (( "$#" )); do
     case "$1" in
@@ -132,6 +136,10 @@ while (( "$#" )); do
         --environment|--e|-e)
             ENV_VAR=$(echo "${2}" | tr '[:lower:]' '[:upper:]')
             shift 2
+            ;;
+        -a)
+            OPEN_CL=1
+            shift
             ;;
         *)
             echo "Unrecognized argument '$1'"
@@ -149,7 +157,7 @@ else
     SERVICE=${WARDEN_PARAMS[0]}
 fi
 
-VALID_SERVICES=( 'db' 'shell' )
+VALID_SERVICES=( 'db' 'shell' 'sftp' )
 IS_VALID=$(array_contains VALID_SERVICES "$SERVICE")
 
 if [[ "$IS_VALID" -eq "1" ]]; then
