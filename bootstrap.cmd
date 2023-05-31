@@ -71,7 +71,13 @@ return [
                 'username' => 'magento',
                 'password' => 'magento',
                 'active' => '1'
-            ]
+            ],
+            'indexer' => [
+                'host' => 'db',
+                'dbname' => 'magento',
+                'username' => 'magento',
+                'password' => 'magento',
+            ],
         ]
     ],
     'resource' => [
@@ -158,13 +164,13 @@ if [[ ! -f ~/.den/ssl/certs/${TRAEFIK_DOMAIN}.crt.pem ]]; then
 fi
 
 :: Initializing environment
-if [[ $AUTO_PULL ]]; then
-  den env pull --ignore-pull-failures || true
-  den env build --pull
-else
-  den env build
-fi
-den env up -d
+#if [[ $AUTO_PULL ]]; then
+#  den env pull --ignore-pull-failures || true
+#  den env build --pull
+#else
+#  den env build
+#fi
+den env up
 
 ## wait for mariadb to start listening for connections
 den shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
@@ -191,6 +197,9 @@ if [[ ${DB_IMPORT} ]]; then
         den import-db --file="${DB_DUMP}"
     fi
 fi
+
+:: Configuring application
+den env exec php-fpm bin/magento app:config:import
 
 if [[ "$WARDEN_VARNISH" -eq "1" ]]; then
     :: Configuring Varnish
