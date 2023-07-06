@@ -5,7 +5,7 @@ WARDEN_USAGE=$(cat <<EOF
 Open tunnel to services
 
 \033[33mUsage:\033[0m
-  open [-h|--help] [db|shell] [--environment=<environment>|-e <environment>]
+  open [-h|--help] [db|shell] [-e|--environment=<environment>]
 
 \033[33mOptions:\033[0m
   -h, --help                   Display this help menu

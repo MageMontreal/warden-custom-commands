@@ -17,3 +17,51 @@ eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^REMOTE_")"
 assertDockerRunning
 
 cd "${WARDEN_ENV_PATH}"
+
+ENV_SOURCE_DEFAULT=0
+
+for (( i=1; i <= "$#"; i++ )); do
+    case "${!i}" in
+        --environment=*)
+            ENV_SOURCE="${!i#*=}"
+            shift
+            ;;
+        -e)
+            j=$(($i+1))
+            ENV_SOURCE="${!j}"
+            shift 2
+            ;;
+    esac
+done
+
+if [ -z ${ENV_SOURCE+x} ]; then
+  ENV_SOURCE=staging
+  ENV_SOURCE_DEFAULT=1
+fi
+
+ENV_SOURCE_VAR=$(echo "$ENV_SOURCE" | tr '[:lower:]' '[:upper:]')
+
+if [[ "$ENV_SOURCE_VAR" == "PRODUCTION" ]]; then
+    ENV_SOURCE_VAR="PROD"
+elif [[ "$ENV_SOURCE_VAR" == "STAG" ]]; then
+    ENV_SOURCE_VAR="STAGING"
+elif [[ "$ENV_SOURCE_VAR" == "DEVELOP" || "$ENV_SOURCE_VAR" == "DEVELOPER" || "$ENV_SOURCE_VAR" == "DEVELOPMENT" ]]; then
+    ENV_SOURCE_VAR="DEV"
+fi
+
+ENV_SOURCE=$(echo "$ENV_SOURCE_VAR" | tr '[:upper:]' '[:lower:]')
+ENV_SOURCE_HOST_VAR="REMOTE_${ENV_SOURCE_VAR}_HOST"
+
+if [ -z ${!ENV_SOURCE_HOST_VAR+x} ]; then
+    echo "Invalid environment '${ENV_SOURCE}'"
+    exit 2
+fi
+
+eval "ENV_SOURCE_HOST=\${"REMOTE_${ENV_SOURCE_VAR}_HOST"}"
+eval "ENV_SOURCE_USER=\${"REMOTE_${ENV_SOURCE_VAR}_USER"}"
+eval "ENV_SOURCE_PORT=\${"REMOTE_${ENV_SOURCE_VAR}_PORT"}"
+eval "ENV_SOURCE_DIR=\${"REMOTE_${ENV_SOURCE_VAR}_PATH"}"
+
+if [ -z ${DB_PREFIX+x} ]; then
+  DB_PREFIX=
+fi

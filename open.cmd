@@ -1,20 +1,8 @@
 #!/usr/bin/env bash
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
 
-set -euo pipefail
-
-function :: {
-    echo
-    echo -e "\033[32m$@\033[0m"
-}
-
-WARDEN_ENV_PATH="$(locateEnvPath)" || exit $?
-
-loadEnvConfig "${WARDEN_ENV_PATH}" || exit $?
-eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^CLOUD_")"
-eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^REMOTE_")"
-
-assertDockerRunning
+SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
+source "${SUBCOMMAND_DIR}"/include
 
 function array_contains() {
     local array="$1[@]"
@@ -49,12 +37,7 @@ function findLocalPort() {
 function remote_db () {
     findLocalPort
 
-    eval "ssh_host=\${"REMOTE_${ENV_VAR}_HOST"}"
-    eval "ssh_user=\${"REMOTE_${ENV_VAR}_USER"}"
-    eval "ssh_port=\${"REMOTE_${ENV_VAR}_PORT"}"
-    eval "remote_dir=\${"REMOTE_${ENV_VAR}_PATH"}"
-
-    local db_info=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a=include \"'"$remote_dir"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
+    local db_info=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
     local db_host=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
     local db_user=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
     local db_pass=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
@@ -69,7 +52,7 @@ function remote_db () {
 
     open_link $DB
 
-    ssh -L $LOCAL_PORT:"$db_host":3306 -N -p $ssh_port $ssh_user@$ssh_host || true
+    ssh -L $LOCAL_PORT:"$db_host":3306 -N -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST || true
 }
 function local_db() {
     findLocalPort
@@ -95,11 +78,7 @@ function local_shell() {
     den shell
 }
 function remote_shell() {
-    eval "ssh_host=\${"REMOTE_${ENV_VAR}_HOST"}"
-    eval "ssh_user=\${"REMOTE_${ENV_VAR}_USER"}"
-    eval "ssh_port=\${"REMOTE_${ENV_VAR}_PORT"}"
-
-    ssh -p $ssh_port $ssh_user@$ssh_host
+    ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST
 }
 function cloud_shell() {
     CLOUD_ENV=${!ENV_HOST}
@@ -109,41 +88,36 @@ function local_sftp() {
     echo "Not Supported."
 }
 function remote_sftp() {
-    eval "ssh_host=\${"REMOTE_${ENV_VAR}_HOST"}"
-    eval "ssh_user=\${"REMOTE_${ENV_VAR}_USER"}"
-    eval "ssh_port=\${"REMOTE_${ENV_VAR}_PORT"}"
-
-    SFTP_LINK="sftp://$ssh_user@$ssh_host:$ssh_port"
-    echo -e "SFTP to \033[32m$ENV_VAR\033[0m at: \033[32m$SFTP_LINK\033[0m"
+    SFTP_LINK="sftp://$ENV_SOURCE_USER@$ENV_SOURCE_HOST:$ENV_SOURCE_PORT$ENV_SOURCE_DIR"
+    echo -e "SFTP to \033[32m$ENV_SOURCE_VAR\033[0m at: \033[32m$SFTP_LINK\033[0m"
     open_link $SFTP_LINK
 }
 function cloud_sftp() {
-    CLOUD_ENV=${!ENV_HOST}
-    SFTP_LINK="sftp://$(magento-cloud ssh --pipe -e "$CLOUD_ENV" -p "$CLOUD_PROJECT")"
+    CLOUD_ENV=${!ENV_SOURCE}
+    SFTP_LINK="sftp://$(magento-cloud ssh --pipe -e "$ENV_SOURCE" -p "$CLOUD_PROJECT")"
     echo -e "SFTP to \033[32m$CLOUD_ENV\033[0m at: \033[32m$SFTP_LINK\033[0m"
     open_link $SFTP_LINK
 }
+function remote_web() {
+    APP_DOMAIN="https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}"
+    echo -e "Local address: \033[32m$CLOUD_ENV\033[0m at: \033[32m$SFTP_LINK\033[0m"
+    open_link $SFTP_LINK
+}
 
-ENV_VAR="LOCAL"
+if [[ "$ENV_SOURCE_DEFAULT" -eq "1" ]]; then
+    ENV_SOURCE_VAR="LOCAL"
+fi
+
 OPEN_CL=0
 
 while (( "$#" )); do
     case "$1" in
-        --environment=*|-e=*|--e=*)
-            ENV_VAR=$(echo "${1#*=}" | tr '[:lower:]' '[:upper:]')
-            shift
-            ;;
-        --environment|--e|-e)
-            ENV_VAR=$(echo "${2}" | tr '[:lower:]' '[:upper:]')
-            shift 2
-            ;;
         -a)
             OPEN_CL=1
             shift
             ;;
         *)
-            echo "Unrecognized argument '$1'"
-            exit 2
+            shift
             ;;
     esac
 done
@@ -166,22 +140,9 @@ if [[ "$IS_VALID" -eq "1" ]]; then
     exit 2
 fi
 
-if [[ "$ENV_VAR" == "PRODUCTION" ]]; then
-    ENV_VAR="PROD"
-elif [[ "$ENV_VAR" == "STAG" ]]; then
-    ENV_VAR="STAGING"
-elif [[ "$ENV_VAR" == "DEVELOP" || "$ENV_VAR" == "DEVELOPER" || "$ENV_VAR" == "DEVELOPMENT" ]]; then
-    ENV_VAR="DEV"
-fi
-
-if [[ "$ENV_VAR" = "LOCAL" ]]; then
+if [[ "$ENV_SOURCE_VAR" = "LOCAL" ]]; then
     local_"${SERVICE}"
 else
-    ENV_HOST="REMOTE_${ENV_VAR}_HOST"
-    if [ -z ${!ENV_HOST+x} ]; then
-        echo "Invalid environment '${ENV_VAR}'"
-        exit 2
-    fi
     if [ -z ${CLOUD_PROJECT+x} ]; then
         remote_"${SERVICE}"
     else

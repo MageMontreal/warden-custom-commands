@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
 
+
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 source "${SUBCOMMAND_DIR}"/include
 
 DUMP_FILENAME=""
-SET_CONFIG=""
+
 PV=`which pv || which cat`
 
 while (( "$#" )); do
@@ -15,9 +16,12 @@ while (( "$#" )); do
             DUMP_FILENAME="${1#*=}"
             shift
             ;;
+        -f)
+            DUMP_FILENAME="${2}"
+            shift 2
+            ;;
         *)
-            echo "Unrecognized argument '$1'"
-            exit 2
+            shift
             ;;
     esac
 done
