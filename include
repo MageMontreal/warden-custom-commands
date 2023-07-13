@@ -24,12 +24,10 @@ for (( i=1; i <= "$#"; i++ )); do
     case "${!i}" in
         --environment=*)
             ENV_SOURCE="${!i#*=}"
-            shift
             ;;
         -e)
             j=$(($i+1))
             ENV_SOURCE="${!j}"
-            shift 2
             ;;
     esac
 done

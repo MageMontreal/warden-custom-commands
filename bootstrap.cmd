@@ -183,7 +183,7 @@ if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
         DB_DUMP="${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
-        den db-dump --file="${DB_DUMP}"
+        den db-dump --file="${DB_DUMP}" -e "$ENV_SOURCE"
     fi
 
     if [[ "$DB_DUMP" ]]; then
@@ -199,7 +199,7 @@ den env exec php-fpm bin/magento cache:flush
 
 if [[ $MEDIA_SYNC ]]; then
     :: Sync Media
-    den sync-media
+    den sync-media -e "$ENV_SOURCE"
 fi
 
 echo "Configuration done."
