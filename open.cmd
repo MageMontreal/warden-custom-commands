@@ -43,7 +43,7 @@ function remote_db () {
     local db_pass=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
     local db_name=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
 
-    DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name?compression=1"
+    DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name"
 
     echo -e "SSH tunnel opened to \033[32m$db_name\033[0m at: \033[32m$DB\033[0m"
     echo
@@ -58,7 +58,7 @@ function local_db() {
     findLocalPort
 
     DB_ENV_NAME="$WARDEN_ENV_NAME"-db-1
-    DB="mysql://magento:magento@127.0.0.1:$LOCAL_PORT/magento?compression=1"
+    DB="mysql://magento:magento@127.0.0.1:$LOCAL_PORT/magento"
 
     echo -e "SSH tunnel opened to \033[32m$DB_ENV_NAME\033[0m at: \033[32m$DB\033[0m"
     echo
@@ -70,8 +70,7 @@ function local_db() {
     ssh -L "$LOCAL_PORT":"$DB_ENV_NAME":3306 -N -p 2222 -i ~/.den/tunnel/ssh_key user@tunnel.den.test || true
 }
 function cloud_db() {
-    CLOUD_ENV=${!ENV_HOST}
-    magento-cloud tunnel:single -e "$CLOUD_ENV" -p "$CLOUD_PROJECT" -r database
+    magento-cloud tunnel:single -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT" -r database
 }
 
 function local_shell() {
@@ -81,8 +80,7 @@ function remote_shell() {
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST
 }
 function cloud_shell() {
-    CLOUD_ENV=${!ENV_HOST}
-    magento-cloud ssh -e "$CLOUD_ENV" -p "$CLOUD_PROJECT"
+    magento-cloud ssh -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT"
 }
 function local_sftp() {
     echo "Not Supported."
@@ -93,9 +91,8 @@ function remote_sftp() {
     open_link $SFTP_LINK
 }
 function cloud_sftp() {
-    CLOUD_ENV=${!ENV_SOURCE}
-    SFTP_LINK="sftp://$(magento-cloud ssh --pipe -e "$ENV_SOURCE" -p "$CLOUD_PROJECT")"
-    echo -e "SFTP to \033[32m$CLOUD_ENV\033[0m at: \033[32m$SFTP_LINK\033[0m"
+    SFTP_LINK="sftp://$(magento-cloud ssh --pipe -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT")"
+    echo -e "SFTP to \033[32m$ENV_SOURCE_HOST\033[0m at: \033[32m$SFTP_LINK\033[0m"
     open_link $SFTP_LINK
 }
 function remote_web() {

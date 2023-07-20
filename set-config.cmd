@@ -58,6 +58,13 @@ den env exec php-fpm bin/magento config:set --lock-env web/cookie/cookie_domain 
 den env exec php-fpm bin/magento config:set --lock-env payment/checkmo/active 1 || true
 den env exec php-fpm bin/magento config:set --lock-env payment/stripe_payments/active 0 || true
 den env exec php-fpm bin/magento config:set --lock-env payment/stripe_payments_basic/stripe_mode test || true
+den env exec php-fpm bin/magento config:set --lock-env msp_securitysuite_recaptcha/backend/enabled 0 || true
+den env exec php-fpm bin/magento config:set --lock-env msp_securitysuite_recaptcha/frontend/enabled 0 || true
+den env exec php-fpm bin/magento config:set --lock-env msp_securitysuite_twofactorauth/general/enabled 0 || true
+den env exec php-fpm bin/magento config:set --lock-env msp_securitysuite_twofactorauth/google/enabled 0 || true
+den env exec php-fpm bin/magento config:set --lock-env msp_securitysuite_twofactorauth/u2fkey/enabled 0 || true
+den env exec php-fpm bin/magento config:set --lock-env msp_securitysuite_twofactorauth/duo/enabled 0 || true
+den env exec php-fpm bin/magento config:set --lock-env msp_securitysuite_twofactorauth/authy/enabled 0 || true
 
 :: Creating admin user
 den env exec php-fpm bin/magento admin:user:create \

@@ -43,6 +43,7 @@ IGNORED_TABLES=(
     'catalog_category_product_index_replica'
     'catalog_product_index_price_replica'
     'core_cache'
+    'cron_schedule'
     'customer_log'
     'customer_visitor'
     'login_as_customer'
@@ -64,7 +65,18 @@ IGNORED_TABLES=(
     'sales_bestsellers_aggregated_daily'
     'sales_bestsellers_aggregated_monthly'
     'sales_bestsellers_aggregated_yearly'
+    'sales_invoiced_aggregated'
+    'sales_invoiced_aggregated_order'
+    'sales_order_aggregated_created'
+    'sales_order_aggregated_updated'
+    'sales_refunded_aggregated'
+    'sales_refunded_aggregated_order'
+    'sales_shipping_aggregated'
+    'sales_shipping_aggregated_order'
+    'catalogsearch_fulltext_cl'
+    'catalogsearch_recommendations'
     'search_query'
+    'persistent_session'
     'session'
     'ui_bookmark'
     'amasty_fpc_activity'
@@ -90,6 +102,8 @@ IGNORED_TABLES=(
     'mailchimp_sync_batches'
     'mailchimp_sync_ecommerce'
     'mailchimp_webhook_request'
+    'msp_tfa_trusted'
+    'msp_tfa_user_config'
  )
 ignored_opts=()
 
@@ -124,6 +138,8 @@ function dumpCloud () {
         ${ignored_opts[@]} \
         --stdout \
         --gzip >> "$DUMP_FILENAME"
+
+    echo -e "✅ \033[32mDatabase dump complete! File: $DUMP_FILENAME\033[0m"
 }
 
 function dumpPremise () {
@@ -144,9 +160,11 @@ function dumpPremise () {
 
     local db_dump="export MYSQL_PWD='${db_pass}';mysqldump  -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --skip-triggers --no-create-info "${ignored_opts[@]}" | gzip"
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" >> "$DUMP_FILENAME"
+    echo -e "✅ \033[32mDatabase dump complete! File: $DUMP_FILENAME\033[0m"
 }
 
 DUMP_FILENAME=
+INCLUDE_CUSTOMER_DATA=0
 
 while (( "$#" )); do
     case "$1" in
@@ -158,6 +176,10 @@ while (( "$#" )); do
             DUMP_FILENAME="${2}"
             shift 2
             ;;
+        --include-customer-data)
+            INCLUDE_CUSTOMER_DATA=1
+            shift
+            ;;
         *)
             shift
             ;;
@@ -166,6 +188,34 @@ done
 
 if [ -z "$DUMP_FILENAME" ]; then
     DUMP_FILENAME="${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
+fi
+
+if [[ "$INCLUDE_CUSTOMER_DATA" -eq "0" ]]; then
+  IGNORED_TABLES+=(
+    'sales_order' 'sales_order_address' 'sales_order_grid' 'sales_order_item' 'sales_order_payment' 'sales_order_status_history' 'sales_order_tax' 'sales_order_tax_item' 'magento_sales_order_grid_archive'
+    'sales_invoice' 'sales_invoice_comment' 'sales_invoice_grid' 'sales_invoice_item' 'magento_sales_invoice_grid_archive'
+    'sales_shipment' 'sales_shipment_comment' 'sales_shipment_grid' 'sales_shipment_item' 'sales_shipment_track' 'magento_sales_shipment_grid_archive'
+    'sales_creditmemo' 'sales_creditmemo_comment' 'sales_creditmemo_grid' 'sales_creditmemo_item' 'magento_sales_creditmemo_grid_archive'
+    'sales_payment_transaction'
+    'paypal_billing_agreement' 'paypal_billing_agreement_order' 'paypal_payment_transaction' 'paypal_settlement_report' 'paypal_settlement_report_row'
+    'magento_rma' 'magento_rma_grid' 'magento_rma_status_history' 'magento_rma_shipping_label' 'magento_rma_item_entity'
+    'quote' 'quote_address' 'quote_address_item' 'quote_id_mask' 'quote_item' 'quote_item_option' 'quote_payment' 'quote_shipping_rate'
+    'customer_address_entity' 'customer_address_entity_datetime' 'customer_address_entity_decimal' 'customer_address_entity_int' 'customer_address_entity_text' 'customer_address_entity_varchar'
+    'customer_entity' 'customer_entity_datetime' 'customer_entity_decimal' 'customer_entity_int' 'customer_entity_text' 'customer_entity_varchar' 'customer_grid_flat'
+    'newsletter_subscriber'
+    'product_alert_price' 'product_alert_stock'
+    'vault_payment_token' 'vault_payment_token_order_payment_link'
+    'wishlist' 'wishlist_item' 'wishlist_item_option'
+    'company' 'company_advanced_customer_entity' 'company_credit' 'company_credit_history' 'company_order_entity' 'company_payment' 'company_permissions' 'company_roles' 'company_shipping' 'company_structure' 'company_team' 'company_user_roles'
+    'negotiable_quote_company_config'
+    'purchase_order_company_config'
+    'magento_giftcardaccount'
+    'magento_customerbalance' 'magento_customerbalance_history' 'magento_customersegment_customer'
+    'magento_reward' 'magento_reward_history'
+    'aw_ca_company' 'aw_ca_company_domain' 'aw_ca_company_payments' 'aw_ca_company_requisition_lists' 'aw_ca_company_user' 'aw_ca_group' 'aw_ca_role'
+    'aw_ca_order_approval_state' 'aw_cl_credit_summary' 'aw_cl_customer_group_credit_limit' 'aw_cl_job' 'aw_cl_transaction' 'aw_cl_transaction_entity' 'aw_cp_category_permissions' 'aw_cp_cms_page_permissions'
+    'aw_cp_product_permissions' 'aw_ctq_comment' 'aw_ctq_comment_attachment' 'aw_ctq_history' 'aw_ctq_quote' 'aw_net30_order'
+  )
 fi
 
 if [ -z ${CLOUD_PROJECT+x} ]; then
