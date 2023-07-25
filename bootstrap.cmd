@@ -181,7 +181,7 @@ fi
 ## import database only if --skip-db-import is not specified
 if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
-        DB_DUMP="${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
+        DB_DUMP="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
         den db-dump --file="${DB_DUMP}" -e "$ENV_SOURCE"
     fi

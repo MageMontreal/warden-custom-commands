@@ -104,6 +104,32 @@ IGNORED_TABLES=(
     'mailchimp_webhook_request'
     'msp_tfa_trusted'
     'msp_tfa_user_config'
+    'ub_migrate_step'
+    'ub_migrate_map_step_2'
+    'ub_migrate_map_step_3'
+    'ub_migrate_map_step_3_attribute'
+    'ub_migrate_map_step_3_attribute_option'
+    'ub_migrate_map_step_4'
+    'ub_migrate_map_step_5'
+    'ub_migrate_map_step_5_product_download'
+    'ub_migrate_map_step_5_product_option'
+    'ub_migrate_map_step_6'
+    'ub_migrate_map_step_6_customer_address'
+    'ub_migrate_map_step_7'
+    'ub_migrate_map_step_7_invoice'
+    'ub_migrate_map_step_7_invoice_item'
+    'ub_migrate_map_step_7_order'
+    'ub_migrate_map_step_7_order_address'
+    'ub_migrate_map_step_7_order_item'
+    'ub_migrate_map_step_7_quote'
+    'ub_migrate_map_step_7_quote_address'
+    'ub_migrate_map_step_7_quote_item'
+    'ub_migrate_map_step_8'
+    'ub_migrate_map_step_8_downloadable_link_purchased'
+    'ub_migrate_map_step_8_rating'
+    'ub_migrate_map_step_8_review'
+    'ub_migrate_map_step_8_review_summary'
+    'ub_migrate_map_step_8_subscriber'
  )
 ignored_opts=()
 
@@ -187,7 +213,7 @@ while (( "$#" )); do
 done
 
 if [ -z "$DUMP_FILENAME" ]; then
-    DUMP_FILENAME="${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
+    DUMP_FILENAME="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
 fi
 
 if [[ "$INCLUDE_CUSTOMER_DATA" -eq "0" ]]; then
