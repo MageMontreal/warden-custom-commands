@@ -102,6 +102,7 @@ IGNORED_TABLES=(
     'mailchimp_sync_batches'
     'mailchimp_sync_ecommerce'
     'mailchimp_webhook_request'
+    'mpproductlabels_rule_meta_cl'
     'msp_tfa_trusted'
     'msp_tfa_user_config'
     'ub_migrate_step'
@@ -181,7 +182,7 @@ function dumpPremise () {
 
     echo -e "⌛ \033[1;32mDumping \033[33m${db_name}\033[1;32m database from \033[33m${ENV_SOURCE_HOST}\033[1;32m...\033[0m"
 
-    local db_dump="export MYSQL_PWD='${db_pass}';mysqldump -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --skip-triggers --no-data | gzip"
+    local db_dump="export MYSQL_PWD='${db_pass}';mysqldump -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --no-data --routines | gzip"
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" > "$DUMP_FILENAME"
 
     local db_dump="export MYSQL_PWD='${db_pass}';mysqldump  -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --skip-triggers --no-create-info "${ignored_opts[@]}" | gzip"
@@ -211,6 +212,10 @@ while (( "$#" )); do
             ;;
     esac
 done
+
+if [[ -z "$DUMP_FILENAME" ]] && [[ -n "${WARDEN_PARAMS[0]+1}" ]]; then
+    DUMP_FILENAME="${WARDEN_PARAMS[0]}"
+fi
 
 if [ -z "$DUMP_FILENAME" ]; then
     DUMP_FILENAME="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"

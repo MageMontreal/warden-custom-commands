@@ -14,6 +14,7 @@ if [[ "$WARDEN_VARNISH" -eq "1" ]]; then
     den env exec php-fpm bin/magento config:set --lock-env system/full_page_cache/varnish/backend_port 80
     den env exec php-fpm bin/magento config:set --lock-env system/full_page_cache/caching_application 2
     den env exec php-fpm bin/magento config:set --lock-env system/full_page_cache/ttl 604800
+    den env exec php-fpm bin/magento setup:config:set --http-cache-hosts=varnish:80
 else
     den env exec php-fpm bin/magento config:set --lock-env system/full_page_cache/caching_application 1
 fi

@@ -27,7 +27,7 @@ function open_link() {
 }
 
 function findLocalPort() {
-    LOCAL_PORT=3306
+    LOCAL_PORT=$1
 
     while [[ $(lsof -Pi :$LOCAL_PORT -sTCP:LISTEN -t) ]]; do
         LOCAL_PORT=$((LOCAL_PORT+1))
@@ -35,7 +35,8 @@ function findLocalPort() {
 }
 
 function remote_db () {
-    findLocalPort
+    REMOTE_PORT=3306
+    findLocalPort $REMOTE_PORT
 
     local db_info=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
     local db_host=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
@@ -52,10 +53,11 @@ function remote_db () {
 
     open_link $DB
 
-    ssh -L $LOCAL_PORT:"$db_host":3306 -N -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST || true
+    ssh -L $LOCAL_PORT:"$db_host":"$REMOTE_PORT" -N -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST || true
 }
 function local_db() {
-    findLocalPort
+    REMOTE_PORT=3306
+    findLocalPort $REMOTE_PORT
 
     DB_ENV_NAME="$WARDEN_ENV_NAME"-db-1
     DB="mysql://magento:magento@127.0.0.1:$LOCAL_PORT/magento"
@@ -67,7 +69,7 @@ function local_db() {
 
     open_link $DB
 
-    ssh -L "$LOCAL_PORT":"$DB_ENV_NAME":3306 -N -p 2222 -i ~/.den/tunnel/ssh_key user@tunnel.den.test || true
+    ssh -L "$LOCAL_PORT":"$DB_ENV_NAME":"$REMOTE_PORT" -N -p 2222 -i ~/.den/tunnel/ssh_key user@tunnel.den.test || true
 }
 function cloud_db() {
     magento-cloud tunnel:single -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT" -r database
@@ -100,6 +102,47 @@ function remote_web() {
     echo -e "Local address: \033[32m$CLOUD_ENV\033[0m at: \033[32m$SFTP_LINK\033[0m"
     open_link $SFTP_LINK
 }
+function local_elasticsearch() {
+    REMOTE_PORT=9200
+    findLocalPort $REMOTE_PORT
+
+    if [[ "$WARDEN_ELASTICSEARCH" -eq "1" ]] || [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
+        if [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
+            ES_ENV_NAME="$WARDEN_ENV_NAME"-opensearch-1
+        else
+            ES_ENV_NAME="$WARDEN_ENV_NAME"-elasticsearch-1
+        fi
+    else
+      echo "Elastic Search or Open Search not enabled for project"
+      exit
+    fi
+
+    ES="http://localhost:$LOCAL_PORT"
+
+    echo -e "Elastic Search tunnel opened to \033[32m$ES_ENV_NAME\033[0m at: \033[32m$ES\033[0m"
+    echo
+    echo "Quitting this command (with Ctrl+C or equivalent) will close the tunnel."
+    echo
+
+    open_link $ES
+
+    ssh -L "$LOCAL_PORT":"$ES_ENV_NAME":"$REMOTE_PORT" -N -p 2222 -i ~/.den/tunnel/ssh_key user@tunnel.den.test || true
+}
+function remote_elasticsearch() {
+    echo "Not yet supported."
+    exit
+}
+function cloud_elasticsearch() {
+    ES_ENV_NAME='elasticsearch'
+    magento-cloud service:list \
+      --project="$CLOUD_PROJECT" \
+      --environment="$ENV_SOURCE_HOST" \
+      --columns=name \
+      --format=plain \
+      --no-header | grep -q 'opensearch' && ES_ENV_NAME='opensearch'
+
+    magento-cloud tunnel:single -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT" -r "$ES_ENV_NAME"
+}
 
 if [[ "$ENV_SOURCE_DEFAULT" -eq "1" ]]; then
     ENV_SOURCE_VAR="LOCAL"
@@ -128,13 +171,17 @@ else
     SERVICE=${WARDEN_PARAMS[0]}
 fi
 
-VALID_SERVICES=( 'db' 'shell' 'sftp' )
+VALID_SERVICES=( 'db' 'shell' 'sftp' 'elasticsearch' 'opensearch' )
 IS_VALID=$(array_contains VALID_SERVICES "$SERVICE")
 
 if [[ "$IS_VALID" -eq "1" ]]; then
     echo "Invalid service. Valid services: "
     echo "  ${VALID_SERVICES[*]}"
     exit 2
+fi
+
+if [[ "$SERVICE" = "opensearch" ]]; then
+    SERVICE="elasticsearch"
 fi
 
 if [[ "$ENV_SOURCE_VAR" = "LOCAL" ]]; then
