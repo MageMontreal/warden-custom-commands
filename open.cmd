@@ -39,10 +39,10 @@ function remote_db () {
     findLocalPort $REMOTE_PORT
 
     local db_info=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
-    local db_host=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
-    local db_user=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
-    local db_pass=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
-    local db_name=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
+    local db_host=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
+    local db_user=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
+    local db_pass=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
+    local db_name=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
 
     DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name"
 
@@ -69,14 +69,14 @@ function local_db() {
 
     open_link $DB
 
-    ssh -L "$LOCAL_PORT":"$DB_ENV_NAME":"$REMOTE_PORT" -N -p 2222 -i ~/.den/tunnel/ssh_key user@tunnel.den.test || true
+    ssh -L "$LOCAL_PORT":"$DB_ENV_NAME":"$REMOTE_PORT" -N -p 2222 -i ~/.warden/tunnel/ssh_key user@tunnel.warden.test || true
 }
 function cloud_db() {
     magento-cloud tunnel:single -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT" -r database
 }
 
 function local_shell() {
-    den shell
+    warden shell
 }
 function remote_shell() {
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST
@@ -126,7 +126,7 @@ function local_elasticsearch() {
 
     open_link $ES
 
-    ssh -L "$LOCAL_PORT":"$ES_ENV_NAME":"$REMOTE_PORT" -N -p 2222 -i ~/.den/tunnel/ssh_key user@tunnel.den.test || true
+    ssh -L "$LOCAL_PORT":"$ES_ENV_NAME":"$REMOTE_PORT" -N -p 2222 -i ~/.warden/tunnel/ssh_key user@tunnel.warden.test || true
 }
 function remote_elasticsearch() {
     echo "Not yet supported."

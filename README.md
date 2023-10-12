@@ -1,12 +1,12 @@
-# Den Custom commands
+# Warden Custom commands
 
 Provides additional commands to simplify local installation.
 
 ### Installation
-Clone this repository in `~/.den/commands` to install it globally (recommended), or locally per project in `[project directory]/.den/commands`.
+Clone this repository in `~/.warden/commands` to install it globally (recommended), or locally per project in `[project directory]/.warden/commands`.
 
 ### Configuration
-In the project `.env` (after `den env-init`), add and configure these values:
+In the project `.env` (after `warden env-init`), add and configure these values:
 
 ```
 REMOTE_PROD_HOST=project.com
@@ -33,10 +33,10 @@ Additionally, you must have this variable:
 
 ### Usage
 
-For all commands, execute `den <command> -h` to see the details of all options.
+For all commands, execute `warden <command> -h` to see the details of all options.
 
-`den bootstrap`  
-* Create and configure den environment
+`warden bootstrap`  
+* Create and configure warden environment
 * Download and import database dump from selected remote
 * Download medias from selected remote
 * Install composer dependencies
@@ -44,17 +44,17 @@ For all commands, execute `den <command> -h` to see the details of all options.
 * Other Magento config like domain, switch some payment methods to sandbox
 * Create admin user
 
-`den db-dump`
+`warden db-dump`
 * Dump DB from selected remote
 
-`den import-db`
+`warden import-db`
 * Import DB. File **must** be specified with option `--file`
 
-`den sync-media`
+`warden sync-media`
 * Download medias from selected remote
 * Product images are not downloaded by default (use `--include-product`)
 
-`den open`
+`warden open`
 * Open DB tunnel to local or remote environments
 * SSH to local or remote environments
 * Show SFTP link you can use in your SFTP client

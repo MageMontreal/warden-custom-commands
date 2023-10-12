@@ -121,7 +121,7 @@ if [[ $OSTYPE =~ ^darwin ]] && ! which mutagen >/dev/null 2>&1 && which brew >/d
 fi
 
 ## check for presence of host machine dependencies
-for DEP_NAME in den mutagen docker-compose pv; do
+for DEP_NAME in warden mutagen docker-compose pv; do
   if [[ "${DEP_NAME}" = "mutagen" ]] && [[ ! $OSTYPE =~ ^darwin ]]; then
     continue
   fi
@@ -151,31 +151,25 @@ done
 ## exit script if there are any missing dependencies or configuration files
 [[ ${INIT_ERROR} ]] && exit 1
 
-:: Starting Den
-den svc up
-if [[ ! -f ~/.den/ssl/certs/${TRAEFIK_DOMAIN}.crt.pem ]]; then
-    den sign-certificate ${TRAEFIK_DOMAIN}
+:: Starting Warden
+warden svc up
+if [[ ! -f ~/.warden/ssl/certs/${TRAEFIK_DOMAIN}.crt.pem ]]; then
+    warden sign-certificate ${TRAEFIK_DOMAIN}
 fi
 
 :: Initializing environment
-#if [[ $AUTO_PULL ]]; then
-#  den env pull --ignore-pull-failures || true
-#  den env build --pull
-#else
-#  den env build
-#fi
-den env up
+warden env up
 
 ## wait for mariadb to start listening for connections
-den shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
+warden shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
 
 if [[ $COMPOSER_INSTALL ]]; then
     :: Installing dependencies
     if [[ ${COMPOSER_VERSION} == 1 ]]; then
-      den env exec php-fpm bash \
+      warden env exec php-fpm bash \
         -c '[[ $(composer -V | cut -d\  -f3 | cut -d. -f1) == 2 ]] || composer global require hirak/prestissimo'
     fi
-    den env exec php-fpm composer install
+    warden env exec php-fpm composer install
 fi
 
 ## import database only if --skip-db-import is not specified
@@ -183,23 +177,23 @@ if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
         DB_DUMP="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
-        den db-dump --file="${DB_DUMP}" -e "$ENV_SOURCE"
+        warden db-dump --file="${DB_DUMP}" -e "$ENV_SOURCE"
     fi
 
     if [[ "$DB_DUMP" ]]; then
         :: Importing database
-        den import-db --file="${DB_DUMP}"
+        warden import-db --file="${DB_DUMP}"
     fi
 fi
 
-den set-config
+warden set-config
 
 :: Flushing cache
-den env exec php-fpm bin/magento cache:flush
+warden env exec php-fpm bin/magento cache:flush
 
 if [[ $MEDIA_SYNC ]]; then
     :: Sync Media
-    den sync-media -e "$ENV_SOURCE"
+    warden sync-media -e "$ENV_SOURCE"
 fi
 
 echo "Configuration done."
