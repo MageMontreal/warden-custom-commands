@@ -41,6 +41,7 @@ IGNORED_TABLES=(
     'catalog_product_index_price_bundle_opt_tmp'
     'catalog_category_product_index_tmp'
     'catalog_category_product_index_replica'
+    'catalog_product_index_eav_replica'
     'catalog_product_index_price_replica'
     'core_cache'
     'cron_schedule'
@@ -203,7 +204,7 @@ while (( "$#" )); do
             DUMP_FILENAME="${2}"
             shift 2
             ;;
-        --include-customer-data)
+        --include-customer-data|-c)
             INCLUDE_CUSTOMER_DATA=1
             shift
             ;;

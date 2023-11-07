@@ -165,10 +165,6 @@ warden shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
 
 if [[ $COMPOSER_INSTALL ]]; then
     :: Installing dependencies
-    if [[ ${COMPOSER_VERSION} == 1 ]]; then
-      warden env exec php-fpm bash \
-        -c '[[ $(composer -V | cut -d\  -f3 | cut -d. -f1) == 2 ]] || composer global require hirak/prestissimo'
-    fi
     warden env exec php-fpm composer install
 fi
 

@@ -39,10 +39,10 @@ function remote_db () {
     findLocalPort $REMOTE_PORT
 
     local db_info=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
-    local db_host=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
-    local db_user=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
-    local db_pass=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
-    local db_name=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
+    local db_host=$(php -r "\$a=$db_info;echo \$a['host'];")
+    local db_user=$(php -r "\$a=$db_info;echo \$a['username'];")
+    local db_pass=$(php -r "\$a=$db_info;echo \$a['password'];")
+    local db_name=$(php -r "\$a=$db_info;echo \$a['dbname'];")
 
     DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name"
 
