@@ -23,17 +23,19 @@ if [[ "$WARDEN_ELASTICSEARCH" -eq "1" ]] || [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; 
     if [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
         :: Configuring OpenSearch
         ELASTICSEARCH_HOSTNAME="opensearch"
+        ELASTICSEARCH_ENGINE="opensearch"
     else
         :: Configuring ElasticSearch
         ELASTICSEARCH_HOSTNAME="elasticsearch"
+        ELASTICSEARCH_ENGINE="elasticsearch7"
     fi
 
-    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/engine elasticsearch7
-    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/elasticsearch7_server_hostname $ELASTICSEARCH_HOSTNAME
-    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/elasticsearch7_server_port 9200
-    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/elasticsearch7_index_prefix magento2
-    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/elasticsearch7_enable_auth 0
-    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/elasticsearch7_server_timeout 15
+    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/engine $ELASTICSEARCH_ENGINE
+    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/${ELASTICSEARCH_ENGINE}_server_hostname $ELASTICSEARCH_HOSTNAME
+    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/${ELASTICSEARCH_ENGINE}_server_port 9200
+    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/${ELASTICSEARCH_ENGINE}_index_prefix magento2
+    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/${ELASTICSEARCH_ENGINE}_enable_auth 0
+    warden env exec php-fpm bin/magento config:set --lock-env catalog/search/${ELASTICSEARCH_ENGINE}_server_timeout 15
 fi
 
 if [[ "$WARDEN_REDIS" -eq "1" ]]; then

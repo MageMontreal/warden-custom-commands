@@ -146,9 +146,11 @@ function dumpCloud () {
         2>/dev/null || true)
     [[ -z "$db_name" ]] && RELATIONSHIP=database
 
-    for table in "${IGNORED_TABLES[@]}"; do
-        ignored_opts+=( --exclude-table="${DB_PREFIX}${table}" )
-    done
+    if [[ "$FULL_DUMP" -eq "0" ]]; then
+      for table in "${IGNORED_TABLES[@]}"; do
+          ignored_opts+=( --exclude-table="${DB_PREFIX}${table}" )
+      done
+    fi
 
     echo -e "⌛ \033[1;32mDumping \033[33m$ENV_SOURCE_HOST\033[1;32m database ...\033[0m"
     magento-cloud db:dump \
@@ -177,9 +179,11 @@ function dumpPremise () {
     local db_pass=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
     local db_name=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
 
-    for table in "${IGNORED_TABLES[@]}"; do
-        ignored_opts+=( --ignore-table="${db_name}.${DB_PREFIX}${table}" )
-    done
+    if [[ "$FULL_DUMP" -eq "0" ]]; then
+      for table in "${IGNORED_TABLES[@]}"; do
+          ignored_opts+=( --ignore-table="${db_name}.${DB_PREFIX}${table}" )
+      done
+    fi
 
     echo -e "⌛ \033[1;32mDumping \033[33m${db_name}\033[1;32m database from \033[33m${ENV_SOURCE_HOST}\033[1;32m...\033[0m"
 
@@ -193,6 +197,7 @@ function dumpPremise () {
 
 DUMP_FILENAME=
 INCLUDE_CUSTOMER_DATA=0
+FULL_DUMP=0
 
 while (( "$#" )); do
     case "$1" in
@@ -208,6 +213,10 @@ while (( "$#" )); do
             INCLUDE_CUSTOMER_DATA=1
             shift
             ;;
+        --full|-d)
+            FULL_DUMP=1
+            shift
+           ;;
         *)
             shift
             ;;
@@ -222,7 +231,7 @@ if [ -z "$DUMP_FILENAME" ]; then
     DUMP_FILENAME="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
 fi
 
-if [[ "$INCLUDE_CUSTOMER_DATA" -eq "0" ]]; then
+if [[ "$FULL_DUMP" -eq "0" && "$INCLUDE_CUSTOMER_DATA" -eq "0" ]]; then
   IGNORED_TABLES+=(
     'sales_order' 'sales_order_address' 'sales_order_grid' 'sales_order_item' 'sales_order_payment' 'sales_order_status_history' 'sales_order_tax' 'sales_order_tax_item' 'magento_sales_order_grid_archive'
     'sales_invoice' 'sales_invoice_comment' 'sales_invoice_grid' 'sales_invoice_item' 'magento_sales_invoice_grid_archive'
