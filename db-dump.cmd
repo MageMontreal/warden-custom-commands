@@ -148,7 +148,7 @@ function dumpCloud () {
 
     if [[ "$FULL_DUMP" -eq "0" ]]; then
       for table in "${IGNORED_TABLES[@]}"; do
-          ignored_opts+=( --exclude-table="${DB_PREFIX}${table}" )
+          ignored_opts+=( --exclude-table="${REMOTE_DB_PREFIX}${table}" )
       done
     fi
 
@@ -181,7 +181,7 @@ function dumpPremise () {
 
     if [[ "$FULL_DUMP" -eq "0" ]]; then
       for table in "${IGNORED_TABLES[@]}"; do
-          ignored_opts+=( --ignore-table="${db_name}.${DB_PREFIX}${table}" )
+          ignored_opts+=( --ignore-table="${db_name}.${REMOTE_DB_PREFIX}${table}" )
       done
     fi
 

@@ -57,7 +57,7 @@ return [
         'key' => '00000000000000000000000000000000'
     ],
     'db' => [
-        'table_prefix' => '$DB_PREFIX',
+        'table_prefix' => '$REMOTE_DB_PREFIX',
         'connection' => [
             'default' => [
                 'host' => 'db',

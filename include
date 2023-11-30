@@ -8,6 +8,10 @@ function :: {
   echo -e "\033[33m$@\033[0m"
 }
 
+function ::: {
+  echo -e "\033[32m$@\033[0m"
+}
+
 WARDEN_ENV_PATH="$(locateEnvPath)" || exit $?
 
 loadEnvConfig "${WARDEN_ENV_PATH}" || exit $?
@@ -60,6 +64,6 @@ eval "ENV_SOURCE_USER=\${"REMOTE_${ENV_SOURCE_VAR}_USER"}"
 eval "ENV_SOURCE_PORT=\${"REMOTE_${ENV_SOURCE_VAR}_PORT"}"
 eval "ENV_SOURCE_DIR=\${"REMOTE_${ENV_SOURCE_VAR}_PATH"}"
 
-if [ -z ${DB_PREFIX+x} ]; then
-  DB_PREFIX=
+if [ -z ${REMOTE_DB_PREFIX+x} ]; then
+  REMOTE_DB_PREFIX=
 fi
