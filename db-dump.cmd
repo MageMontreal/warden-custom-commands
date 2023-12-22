@@ -165,7 +165,7 @@ function dumpCloud () {
         --project="$CLOUD_PROJECT" \
         --environment="$ENV_SOURCE_HOST" \
         --relationship=$RELATIONSHIP \
-        ${ignored_opts[@]} \
+        ${ignored_opts[@]-} \
         --stdout \
         --gzip >> "$DUMP_FILENAME"
 
@@ -174,10 +174,10 @@ function dumpCloud () {
 
 function dumpPremise () {
     local db_info=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
-    local db_host=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
-    local db_user=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
-    local db_pass=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
-    local db_name=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
+    local db_host=$(php -r "\$a=$db_info;echo \$a['host'];")
+    local db_user=$(php -r "\$a=$db_info;echo \$a['username'];")
+    local db_pass=$(php -r "\$a=$db_info;echo \$a['password'];")
+    local db_name=$(php -r "\$a=$db_info;echo \$a['dbname'];")
 
     if [[ "$FULL_DUMP" -eq "0" ]]; then
       for table in "${IGNORED_TABLES[@]}"; do
@@ -190,7 +190,7 @@ function dumpPremise () {
     local db_dump="export MYSQL_PWD='${db_pass}';mysqldump -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --no-data --routines | gzip"
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" > "$DUMP_FILENAME"
 
-    local db_dump="export MYSQL_PWD='${db_pass}';mysqldump  -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --skip-triggers --no-create-info "${ignored_opts[@]}" | gzip"
+    local db_dump="export MYSQL_PWD='${db_pass}';mysqldump  -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --skip-triggers --no-create-info "${ignored_opts[@]-}" | gzip"
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" >> "$DUMP_FILENAME"
     echo -e "✅ \033[32mDatabase dump complete! File: $DUMP_FILENAME\033[0m"
 }

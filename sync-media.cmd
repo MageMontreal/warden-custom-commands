@@ -19,7 +19,7 @@ function dumpCloud () {
 
 function dumpPremise () {
     echo -e "⌛ \033[1;32mDownloading files from $ENV_SOURCE_HOST\033[0m ..."
-    rsync -az -e 'ssh -p '"$ENV_SOURCE_PORT" \
+    warden env exec php-fpm rsync -az --info=progress2 -e 'ssh -p '"$ENV_SOURCE_PORT" \
         "${exclude_opts[@]}" \
         $ENV_SOURCE_USER@$ENV_SOURCE_HOST:$ENV_SOURCE_DIR/pub/media/ pub/media/
 }
