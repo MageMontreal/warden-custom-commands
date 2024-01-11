@@ -26,7 +26,7 @@ if [[ "$WARDEN_ELASTICSEARCH" -eq "1" ]] || [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; 
         ELASTICSEARCH_HOSTNAME="opensearch"
         ELASTICSEARCH_ENGINE="opensearch"
         MAGENTO_VERSION=$(warden env exec php-fpm bin/magento --version | awk '{print $3}')
-        if ! test "$(version "${MAGENTO_VERSION}")" -ge "$(version "2.4.5")"; then
+        if ! test "$(version "${MAGENTO_VERSION}")" -ge "$(version "2.4.6")"; then
            ELASTICSEARCH_ENGINE="elasticsearch7"
         fi
     else
