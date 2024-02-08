@@ -6,7 +6,7 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/include
 
 ## configure command defaults
-REQUIRED_FILES=("${WARDEN_ENV_PATH}/auth.json")
+REQUIRED_FILES=("${WARDEN_ENV_PATH}/auth.json" "${WARDEN_ENV_PATH}/app/etc/config.php")
 DB_DUMP=
 DB_IMPORT=1
 AUTO_PULL=1
@@ -16,7 +16,6 @@ APP_DOMAIN="${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}"
 URL_FRONT="https://${APP_DOMAIN}/"
 URL_ADMIN="https://${APP_DOMAIN}/admin/"
 
-## argument parsing
 ## parse arguments
 while (( "$#" )); do
     case "$1" in
@@ -45,6 +44,45 @@ while (( "$#" )); do
             ;;
     esac
 done
+
+## include check for DB_DUMP file only when database import is expected
+[[ ${DB_IMPORT} ]] && [[ "$DB_DUMP" ]] && REQUIRED_FILES+=("${DB_DUMP}")
+
+:: Verifying configuration
+INIT_ERROR=
+
+## attempt to install mutagen if not already present
+if [[ $OSTYPE =~ ^darwin ]] && ! which mutagen >/dev/null 2>&1 && which brew >/dev/null 2>&1; then
+    warning "Mutagen could not be found; attempting install via brew."
+    brew install havoc-io/mutagen/mutagen
+fi
+
+## verify mutagen version constraint
+MUTAGEN_VERSION=$(mutagen version 2>/dev/null) || true
+MUTAGEN_REQUIRE=0.11.4
+if [[ $OSTYPE =~ ^darwin ]] && ! test "$(version "${MUTAGEN_VERSION}")" -ge "$(version "${MUTAGEN_REQUIRE}")"; then
+  error "Mutagen ${MUTAGEN_REQUIRE} or greater is required (version ${MUTAGEN_VERSION} is installed)"
+  INIT_ERROR=1
+fi
+
+## verify PHP version constraint
+SYSTEM_PHP_VERSION=$(php -v | awk 'NR<=1{ print $2 }' 2>/dev/null) || true
+PHP_REQUIRE=8.1.0
+if ! test "$(version "${SYSTEM_PHP_VERSION}")" -ge "$(version "${PHP_REQUIRE}")"; then
+  error "PHP ${PHP_REQUIRE} or greater is required (version ${SYSTEM_PHP_VERSION} is installed)"
+  INIT_ERROR=1
+fi
+
+## check for presence of local configuration files to ensure they exist
+for REQUIRED_FILE in "${REQUIRED_FILES[@]}"; do
+  if [[ ! -f "${REQUIRED_FILE}" ]]; then
+    error "Missing local file: ${REQUIRED_FILE}"
+    INIT_ERROR=1
+  fi
+done
+
+## exit script if there are any missing dependencies or configuration files
+[[ ${INIT_ERROR} ]] && exit 1
 
 if [ ! -f "${WARDEN_ENV_PATH}/app/etc/env.php" ]; then
     cat << EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
@@ -107,49 +145,6 @@ return [
 
 EOT
 fi
-
-## include check for DB_DUMP file only when database import is expected
-[[ ${DB_IMPORT} ]] && [[ "$DB_DUMP" ]] && REQUIRED_FILES+=("${DB_DUMP}")
-
-:: Verifying configuration
-INIT_ERROR=
-
-## attempt to install mutagen if not already present
-if [[ $OSTYPE =~ ^darwin ]] && ! which mutagen >/dev/null 2>&1 && which brew >/dev/null 2>&1; then
-    warning "Mutagen could not be found; attempting install via brew."
-    brew install havoc-io/mutagen/mutagen
-fi
-
-## check for presence of host machine dependencies
-for DEP_NAME in warden mutagen docker-compose pv; do
-  if [[ "${DEP_NAME}" = "mutagen" ]] && [[ ! $OSTYPE =~ ^darwin ]]; then
-    continue
-  fi
-
-  if ! which "${DEP_NAME}" 2>/dev/null >/dev/null; then
-    error "Command '${DEP_NAME}' not found. Please install."
-    INIT_ERROR=1
-  fi
-done
-
-## verify mutagen version constraint
-MUTAGEN_VERSION=$(mutagen version 2>/dev/null) || true
-MUTAGEN_REQUIRE=0.11.4
-if [[ $OSTYPE =~ ^darwin ]] && ! test "$(version "${MUTAGEN_VERSION}")" -ge "$(version "${MUTAGEN_REQUIRE}")"; then
-  error "Mutagen ${MUTAGEN_REQUIRE} or greater is required (version ${MUTAGEN_VERSION} is installed)"
-  INIT_ERROR=1
-fi
-
-## check for presence of local configuration files to ensure they exist
-for REQUIRED_FILE in "${REQUIRED_FILES[@]}"; do
-  if [[ ! -f "${REQUIRED_FILE}" ]]; then
-    error "Missing local file: ${REQUIRED_FILE}"
-    INIT_ERROR=1
-  fi
-done
-
-## exit script if there are any missing dependencies or configuration files
-[[ ${INIT_ERROR} ]] && exit 1
 
 :: Starting Warden
 warden svc up

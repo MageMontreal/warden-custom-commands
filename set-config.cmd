@@ -71,6 +71,7 @@ warden env exec php-fpm bin/magento config:set -q --lock-env web/cookie/cookie_d
 warden env exec php-fpm bin/magento config:set -q --lock-env payment/checkmo/active 1 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env payment/stripe_payments/active 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env payment/stripe_payments_basic/stripe_mode test || true
+warden env exec php-fpm bin/magento config:set -q --lock-env admin/captcha/enable 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_recaptcha/backend/enabled 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_recaptcha/frontend/enabled 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_twofactorauth/general/enabled 0 || true
@@ -78,6 +79,8 @@ warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_t
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_twofactorauth/u2fkey/enabled 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_twofactorauth/duo/enabled 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_twofactorauth/authy/enabled 0 || true
+warden env exec php-fpm bin/magento config:set -q --lock-env google/analytics/active 0 || true
+warden env exec php-fpm bin/magento config:set -q --lock-env google/adwords/active 0 || true
 ::: Done
 
 :: Creating admin user
