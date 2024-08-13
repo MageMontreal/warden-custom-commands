@@ -5,6 +5,14 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 source "${SUBCOMMAND_DIR}"/include
 
+function before_set_config() { :; }
+function after_set_config() { :; }
+
+ENV_HOOKS_FILE="${WARDEN_ENV_PATH}/.warden/hooks"
+if [ -f "${ENV_HOOKS_FILE}" ]; then
+    source "${ENV_HOOKS_FILE}"
+fi
+
 :: Importing config
 warden env exec php-fpm bin/magento app:config:import || true
 
@@ -46,6 +54,7 @@ fi
 
 if [[ "$WARDEN_REDIS" -eq "1" ]]; then
     :: Configuring Redis
+    warden redis flushall
     warden env exec php-fpm bin/magento setup:config:set -q --cache-backend=redis --cache-backend-redis-server=redis --cache-backend-redis-db=0 --cache-backend-redis-port=6379 --no-interaction
     warden env exec php-fpm bin/magento setup:config:set -q --page-cache=redis --page-cache-redis-server=redis --page-cache-redis-db=1 --page-cache-redis-port=6379 --no-interaction
     warden env exec php-fpm bin/magento setup:config:set -q --session-save=redis --session-save-redis-host=redis --session-save-redis-max-concurrency=20 --session-save-redis-db=2 --session-save-redis-port=6379 --no-interaction
@@ -57,8 +66,9 @@ warden env exec php-fpm bin/magento setup:upgrade
 ::: Done
 
 :: Configuring application
+before_set_config
 warden db connect -e "UPDATE ${REMOTE_DB_PREFIX}core_config_data SET value = 'https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/' WHERE path IN('web/secure/base_url','web/unsecure/base_url','web/unsecure/base_link_url','web/secure/base_link_url')"
-warden db connect -e "UPDATE ${REMOTE_DB_PREFIX}core_config_data SET value = 'dev_$((1000 + $RANDOM % 10000))' WHERE path = 'algoliasearch_credentials/credentials/index_prefix'"
+warden db connect -e "DELETE FROM ${REMOTE_DB_PREFIX}core_config_data WHERE path IN('web/secure/base_static_url','web/secure/base_media_url','web/unsecure/base_static_url','web/unsecure/base_media_url')"
 
 warden env exec php-fpm bin/magento config:set -q --lock-env web/unsecure/base_url "https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/"
 warden env exec php-fpm bin/magento config:set -q --lock-env web/secure/base_url "https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/"
@@ -79,8 +89,15 @@ warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_t
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_twofactorauth/u2fkey/enabled 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_twofactorauth/duo/enabled 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env msp_securitysuite_twofactorauth/authy/enabled 0 || true
+warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/type_recaptcha/public_key '' || true
+warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/type_recaptcha/private_key '' || true
+warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/type_invisible/public_key '' || true
+warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/type_invisible/private_key '' || true
+warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/type_recaptcha_v3/public_key '' || true
+warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/type_recaptcha_v3/private_key '' || true
 warden env exec php-fpm bin/magento config:set -q --lock-env google/analytics/active 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env google/adwords/active 0 || true
+after_set_config
 ::: Done
 
 :: Creating admin user

@@ -5,7 +5,7 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 source "${SUBCOMMAND_DIR}"/include
 
-function dumpCloud () {
+function syncCloud () {
     echo -e "\033[1;32mDownloading files from \033[33mAdobe Commerce Cloud \033[1;36m${ENV_SOURCE}\033[0m ..."
     magento-cloud mount:download -p "$CLOUD_PROJECT" \
         --environment="$ENV_SOURCE_HOST" \
@@ -17,7 +17,7 @@ function dumpCloud () {
 
 }
 
-function dumpPremise () {
+function syncPremise () {
     echo -e "⌛ \033[1;32mDownloading files from $ENV_SOURCE_HOST\033[0m ..."
     warden env exec php-fpm rsync -az --info=progress2 -e 'ssh -p '"$ENV_SOURCE_PORT" \
         "${exclude_opts[@]}" \
@@ -39,19 +39,20 @@ while (( "$#" )); do
 done
 
 EXCLUDE=( 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' 'amasty/blog/cache' 'catalog/product.rm' 'catalog/product/cache' 'catalog/product/product' )
+exclude_opts=()
 
 if [[ "$DUMP_INCLUDE_PRODUCT" -eq "0" ]]; then
+  exclude_opts+=( --include="catalog/product/placeholder" )
   EXCLUDE+=('catalog/product')
 fi
 
-exclude_opts=()
 for item in "${EXCLUDE[@]}"; do
     exclude_opts+=( --exclude="$item" )
 done
 
 if [ -z ${CLOUD_PROJECT+x} ]; then
-    dumpPremise
+    syncPremise
 else
-    dumpCloud
+    syncCloud
 fi
 

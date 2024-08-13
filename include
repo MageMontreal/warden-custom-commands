@@ -12,6 +12,19 @@ function ::: {
   echo -e "\033[32m$@\033[0m"
 }
 
+function array_contains() {
+    local array="$1[@]"
+    local seeking=$2
+    local in=1
+    for element in "${!array}"; do
+        if [[ $element == "$seeking" ]]; then
+            in=0
+            break
+        fi
+    done
+    echo $in
+}
+
 WARDEN_ENV_PATH="$(locateEnvPath)" || exit $?
 
 loadEnvConfig "${WARDEN_ENV_PATH}" || exit $?
@@ -63,6 +76,12 @@ eval "ENV_SOURCE_HOST=\${"REMOTE_${ENV_SOURCE_VAR}_HOST"}"
 eval "ENV_SOURCE_USER=\${"REMOTE_${ENV_SOURCE_VAR}_USER"}"
 eval "ENV_SOURCE_PORT=\${"REMOTE_${ENV_SOURCE_VAR}_PORT"}"
 eval "ENV_SOURCE_DIR=\${"REMOTE_${ENV_SOURCE_VAR}_PATH"}"
+
+if eval "[[ -n \${REMOTE_${ENV_SOURCE_VAR}_URL+x} ]]"; then
+  eval "ENV_SOURCE_URL=\${"REMOTE_${ENV_SOURCE_VAR}_URL"}"
+else
+  ENV_SOURCE_URL=
+fi
 
 if [ -z ${REMOTE_DB_PREFIX+x} ]; then
   REMOTE_DB_PREFIX=

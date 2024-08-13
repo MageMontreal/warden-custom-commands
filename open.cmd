@@ -4,19 +4,6 @@
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/include
 
-function array_contains() {
-    local array="$1[@]"
-    local seeking=$2
-    local in=1
-    for element in "${!array}"; do
-        if [[ $element == "$seeking" ]]; then
-            in=0
-            break
-        fi
-    done
-    echo $in
-}
-
 function open_link() {
     if [[ "$OPEN_CL" -eq "1" ]]; then
         OPEN=$(which xdg-open || which open || which start) || true
@@ -97,11 +84,28 @@ function cloud_sftp() {
     echo -e "SFTP to \033[32m$ENV_SOURCE_HOST\033[0m at: \033[32m$SFTP_LINK\033[0m"
     open_link $SFTP_LINK
 }
-function remote_web() {
-    APP_DOMAIN="https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}"
-    echo -e "Local address: \033[32m$CLOUD_ENV\033[0m at: \033[32m$SFTP_LINK\033[0m"
-    open_link $SFTP_LINK
+function local_admin() {
+    APP_DOMAIN="https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/"
+    local admin_path=$(php -r "\$a=include \"app/etc/env.php\"; echo \$a[\"backend\"][\"frontName\"];")
+    echo -e "\033[32m$ENV_SOURCE_VAR\033[0m admin at: \033[32m${APP_DOMAIN}${admin_path}\033[0m"
+    open_link "${APP_DOMAIN}${admin_path}"
 }
+function remote_admin() {
+    local admin_path=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; echo \$a[\"backend\"][\"frontName\"];"')
+    echo -e "\033[32m$ENV_SOURCE_VAR\033[0m admin at: \033[32m${ENV_SOURCE_URL}${admin_path}\033[0m"
+    if [[ ! -z "$ENV_SOURCE_URL" ]]; then
+      open_link "${ENV_SOURCE_URL}${admin_path}"
+    fi
+}
+function cloud_admin() {
+  local admin_path=$(magento-cloud variable:get -P value ADMIN_URL -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT")
+  echo -e "\033[32m$ENV_SOURCE_HOST\033[0m admin at: \033[32m${ENV_SOURCE_URL}${admin_path}\033[0m"
+  if [[ ! -z "$ENV_SOURCE_URL" ]]; then
+    open_link "${ENV_SOURCE_URL}${admin_path}"
+  fi
+}
+
+
 function local_elasticsearch() {
     REMOTE_PORT=9200
     findLocalPort $REMOTE_PORT
@@ -171,7 +175,7 @@ else
     SERVICE=${WARDEN_PARAMS[0]}
 fi
 
-VALID_SERVICES=( 'db' 'shell' 'sftp' 'elasticsearch' 'opensearch' )
+VALID_SERVICES=( 'db' 'shell' 'sftp' 'elasticsearch' 'opensearch' 'admin' )
 IS_VALID=$(array_contains VALID_SERVICES "$SERVICE")
 
 if [[ "$IS_VALID" -eq "1" ]]; then

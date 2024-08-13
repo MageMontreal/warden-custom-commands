@@ -2,16 +2,20 @@
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
 
 WARDEN_USAGE=$(cat <<EOF
-Dump remote database and download it locally.
+Dump remote database and download it locally. By default, customers, orders and temporary tables are excluded.
 
 \033[33mUsage:\033[0m
-  db-dump [-h|--help] [-e|--environment=<environment>] [-f|--file=<file>]
+  db-dump [-h|--help] [-e|--environment=<environment>] [-f|--file=<file>] [-c|--include-customer-data] [-d|--full]
 
 \033[33mOptions:\033[0m
   -h, --help                   Display this help menu
 
 \033[33mArguments:\033[0m
-  -f, --file=<file>   Output file.
+  -f, --file=<file>            Output file.
+
+  -c, --include-customer-data  Include customers data such as customers and orders
+
+  -d, --full                   Full dump, no tables or data are excluded
 
   -e, --environment=<dev|production|staging>  Specific environment to run a database backup from. Default: staging
 

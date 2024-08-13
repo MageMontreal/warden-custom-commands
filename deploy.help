@@ -2,16 +2,18 @@
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
 
 WARDEN_USAGE=$(cat <<EOF
-Open tunnel to services
+Deploy Magento locally. If no argument is provided, a full deployment is executed.
 
 \033[33mUsage:\033[0m
-  open [-h|--help] [db|shell|sftp|admin|elasticsearch] [-e|--environment=<environment>]
+  deploy [-h|--help] [full|static]
 
 \033[33mOptions:\033[0m
   -h, --help                   Display this help menu
 
 \033[33mArguments:\033[0m
-  -e|--environment=<local|dev|production|staging>  Specific environment to use. Default: local
+  full                         Full deployment (default)
+
+  static                       Deploy static files only
 
 EOF
 )
