@@ -66,7 +66,7 @@ function local_shell() {
     warden shell
 }
 function remote_shell() {
-    ssh -t -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "cd $ENV_SOURCE_DIR; bash"
+    ssh -t -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "cd $ENV_SOURCE_DIR; exec \$SHELL -l; exit"
 }
 function cloud_shell() {
     magento-cloud ssh -e "$ENV_SOURCE_HOST" -p "$CLOUD_PROJECT"

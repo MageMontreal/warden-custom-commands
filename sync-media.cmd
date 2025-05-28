@@ -38,12 +38,13 @@ while (( "$#" )); do
     esac
 done
 
-EXCLUDE=( 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' 'amasty/blog/cache' 'catalog/product.rm' 'catalog/product/cache' 'catalog/product/product' )
+EXCLUDE=( 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' 'customer' 'feeds' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' 'amasty/blog/cache' 'amasty/amoptimizer_dump' 'amasty/amoptmobile' 'amasty/amopttablet' 'amasty/webp' 'amasty/amcustomform' 'ulmod_gallerypro/cache' 'resized' 'mf_webp' 'cache/dakzilla_intervention' 'catalog/product.rm' 'catalog/product/product' )
 exclude_opts=()
 
 if [[ "$DUMP_INCLUDE_PRODUCT" -eq "0" ]]; then
-  exclude_opts+=( --include="catalog/product/placeholder" )
   EXCLUDE+=('catalog/product')
+else
+    EXCLUDE+=('catalog/product/cache')
 fi
 
 for item in "${EXCLUDE[@]}"; do

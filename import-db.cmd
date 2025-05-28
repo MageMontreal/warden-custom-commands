@@ -38,7 +38,7 @@ fi
 launchedDatabaseContainer=0
 DB_CONTAINER_ID=$(warden env ps --filter status=running -q db 2>/dev/null || true)
 if [[ -z "$DB_CONTAINER_ID" ]]; then
-  den env up db
+  warden env up db
   DB_CONTAINER_ID=$(warden env ps --filter status=running -q db 2>/dev/null || true)
   if [[ -z "$DB_CONTAINER_ID" ]]; then
     echo -e "😮 \033[31mDatabase container failed to start\033[0m"
@@ -49,7 +49,7 @@ fi
 
 
 echo -e "⌛ \033[1;32mDropping and initializing docker database ...\033[0m"
-warden db connect -e 'drop database magento; create database magento character set = "utf8" collate = "utf8_general_ci";'
+warden db connect -e 'SET FOREIGN_KEY_CHECKS = 0;drop database magento; create database magento character set = "utf8" collate = "utf8_general_ci"; SET FOREIGN_KEY_CHECKS = 1;'
 
 echo -e "🔥 \033[1;32mImporting database ...\033[0m"
 if gzip -t "$DUMP_FILENAME"; then

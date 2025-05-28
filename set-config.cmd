@@ -97,6 +97,7 @@ warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/
 warden env exec php-fpm bin/magento config:set -q --lock-env recaptcha_frontend/type_recaptcha_v3/private_key '' || true
 warden env exec php-fpm bin/magento config:set -q --lock-env google/analytics/active 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env google/adwords/active 0 || true
+warden env exec php-fpm bin/magento config:set -q --lock-env system/smtp/transport sendmail || true
 after_set_config
 ::: Done
 
