@@ -13,6 +13,7 @@ IGNORED_TABLES=(
     'admin_user_session'
     'adminnotification_inbox'
     'cache_tag'
+    'catalog_category_product_cl'
     'catalog_product_index_price_final_idx'
     'catalog_product_index_price_bundle_opt_idx'
     'catalog_product_index_price_bundle_idx'
@@ -23,7 +24,6 @@ IGNORED_TABLES=(
     'catalog_product_index_price_opt_agr_idx'
     'catalog_product_index_price_bundle_sel_idx'
     'catalog_product_index_eav_decimal_idx'
-    'cataloginventory_stock_status_idx'
     'catalog_product_index_eav_idx'
     'catalog_product_index_price_idx'
     'catalog_product_index_price_downlod_tmp'
@@ -36,17 +36,27 @@ IGNORED_TABLES=(
     'catalog_product_index_price_opt_agr_tmp'
     'catalog_product_index_price_bundle_tmp'
     'catalog_product_index_price_bundle_sel_tmp'
-    'cataloginventory_stock_status_tmp'
     'catalog_product_index_price_final_tmp'
     'catalog_product_index_price_bundle_opt_tmp'
     'catalog_category_product_index_tmp'
     'catalog_category_product_index_replica'
     'catalog_product_index_eav_replica'
     'catalog_product_index_price_replica'
+    'catalog_product_attribute_cl'
+    'catalog_product_category_cl'
+    'catalog_product_price_cl'
+    'cataloginventory_stock_status_idx'
+    'cataloginventory_stock_status_tmp'
+    'cataloginventory_stock_cl'
+    'catalogrule_product_cl'
+    'catalogrule_rule_cl'
+    'catalogsearch_fulltext_cl'
+    'catalogsearch_recommendations'
     'core_cache'
     'cron_schedule'
     'customer_log'
     'customer_visitor'
+    'inventory_cl'
     'login_as_customer'
     'magento_bulk'
     'magento_login_as_customer_log'
@@ -74,8 +84,8 @@ IGNORED_TABLES=(
     'sales_refunded_aggregated_order'
     'sales_shipping_aggregated'
     'sales_shipping_aggregated_order'
-    'catalogsearch_fulltext_cl'
-    'catalogsearch_recommendations'
+    'sales_order_data_exporter_cl'
+    'store_data_exporter_cl'
     'search_query'
     'persistent_session'
     'session'
@@ -94,6 +104,10 @@ IGNORED_TABLES=(
     'amasty_reports_customers_customers_monthly'
     'amasty_reports_customers_customers_weekly'
     'amasty_reports_customers_customers_yearly'
+    'amasty_geoip_block'
+    'amasty_geoip_block_v6'
+    'amasty_geoip_ip_log'
+    'amasty_geoip_location'
     'kiwicommerce_activity'
     'kiwicommerce_activity_detail'
     'kiwicommerce_activity_log'
@@ -109,6 +123,10 @@ IGNORED_TABLES=(
     'mpproductlabels_rule_meta_cl'
     'msp_tfa_trusted'
     'msp_tfa_user_config'
+    'swissup_seoimages_index_product_cl'
+    'swissup_prolabels_index_cl'
+    'swissup_seotemplates_index_category_cl'
+    'swissup_seotemplates_index_product_cl'
     'ub_migrate_step'
     'ub_migrate_map_step_2'
     'ub_migrate_map_step_3'
@@ -200,6 +218,7 @@ function dumpPremise () {
 
     local db_dump="export MYSQL_PWD='${db_pass}';mysqldump  -h$db_host -u$db_user $db_name --no-tablespaces --single-transaction --skip-triggers --skip-comments --no-create-info "${ignored_opts[@]-}" | gzip"
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" >> "$DUMP_FILENAME"
+    echo "UPDATE ${REMOTE_DB_PREFIX}mview_state SET version_id = '0';" | gzip >> "$DUMP_FILENAME"
     echo -e "✅ \033[32mDatabase dump complete! File: $DUMP_FILENAME\033[0m"
 }
 
@@ -236,6 +255,9 @@ if [[ -z "$DUMP_FILENAME" ]] && [[ -n "${WARDEN_PARAMS[0]+1}" ]]; then
 fi
 
 if [ -z "$DUMP_FILENAME" ]; then
+    if [ ! -d "var" ]; then
+        mkdir var
+    fi
     DUMP_FILENAME="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
 fi
 
@@ -245,7 +267,7 @@ if [[ "$FULL_DUMP" -eq "0" && "$INCLUDE_CUSTOMER_DATA" -eq "0" ]]; then
     'sales_invoice' 'sales_invoice_comment' 'sales_invoice_grid' 'sales_invoice_item' 'magento_sales_invoice_grid_archive'
     'sales_shipment' 'sales_shipment_comment' 'sales_shipment_grid' 'sales_shipment_item' 'sales_shipment_track' 'magento_sales_shipment_grid_archive'
     'sales_creditmemo' 'sales_creditmemo_comment' 'sales_creditmemo_grid' 'sales_creditmemo_item' 'magento_sales_creditmemo_grid_archive'
-    'sales_payment_transaction'
+    'sales_payment_transaction' 'salesrule_coupon_usage'
     'paypal_billing_agreement' 'paypal_billing_agreement_order' 'paypal_payment_transaction' 'paypal_settlement_report' 'paypal_settlement_report_row'
     'magento_rma' 'magento_rma_grid' 'magento_rma_status_history' 'magento_rma_shipping_label' 'magento_rma_item_entity'
     'quote' 'quote_address' 'quote_address_item' 'quote_id_mask' 'quote_item' 'quote_item_option' 'quote_payment' 'quote_shipping_rate'
@@ -256,6 +278,7 @@ if [[ "$FULL_DUMP" -eq "0" && "$INCLUDE_CUSTOMER_DATA" -eq "0" ]]; then
     'vault_payment_token' 'vault_payment_token_order_payment_link'
     'wishlist' 'wishlist_item' 'wishlist_item_option'
     'company' 'company_advanced_customer_entity' 'company_credit' 'company_credit_history' 'company_order_entity' 'company_payment' 'company_permissions' 'company_roles' 'company_shipping' 'company_structure' 'company_team' 'company_user_roles'
+    'amasty_company_account_company' 'amasty_company_account_customer' 'amasty_company_account_order' 'amasty_company_account_permission' 'amasty_company_account_role' 'amasty_company_credit' 'amasty_company_credit_event' 'amasty_company_credit_overdraft'
     'negotiable_quote_company_config'
     'purchase_order_company_config'
     'magento_giftcardaccount'

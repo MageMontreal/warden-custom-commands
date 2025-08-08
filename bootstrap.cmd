@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
+assertDockerRunning
 
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 
@@ -83,68 +84,6 @@ done
 
 ## exit script if there are any missing dependencies or configuration files
 [[ ${INIT_ERROR} ]] && exit 1
-
-if [ ! -f "${WARDEN_ENV_PATH}/app/etc/env.php" ]; then
-    cat << EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
-<?php
-return [
-    'backend' => [
-        'frontName' => 'admin'
-    ],
-    'crypt' => [
-        'key' => '00000000000000000000000000000000'
-    ],
-    'db' => [
-        'table_prefix' => '$REMOTE_DB_PREFIX',
-        'connection' => [
-            'default' => [
-                'host' => 'db',
-                'dbname' => 'magento',
-                'username' => 'magento',
-                'password' => 'magento',
-                'active' => '1'
-            ],
-            'indexer' => [
-                'host' => 'db',
-                'dbname' => 'magento',
-                'username' => 'magento',
-                'password' => 'magento',
-            ],
-        ]
-    ],
-    'resource' => [
-        'default_setup' => [
-            'connection' => 'default'
-        ]
-    ],
-    'x-frame-options' => 'SAMEORIGIN',
-    'MAGE_MODE' => 'developer',
-    'session' => [
-        'save' => 'files'
-    ],
-    'cache_types' => [
-        'config' => 1,
-        'layout' => 1,
-        'block_html' => 0,
-        'collections' => 1,
-        'reflection' => 1,
-        'db_ddl' => 1,
-        'eav' => 1,
-        'customer_notification' => 1,
-        'config_integration' => 1,
-        'config_integration_api' => 1,
-        'full_page' => 0,
-        'translate' => 1,
-        'config_webservice' => 1,
-        'compiled_config' => 1
-    ],
-    'install' => [
-        'date' => 'Sun, 01 Jan 2020 00:00:00 +0000'
-    ]
-];
-
-EOT
-fi
 
 :: Starting Warden
 warden svc up

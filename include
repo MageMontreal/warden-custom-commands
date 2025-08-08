@@ -31,8 +31,6 @@ loadEnvConfig "${WARDEN_ENV_PATH}" || exit $?
 eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^CLOUD_")"
 eval "$(cat "${WARDEN_ENV_PATH}/.env" | sed 's/\r$//g' | grep "^REMOTE_")"
 
-assertDockerRunning
-
 cd "${WARDEN_ENV_PATH}"
 
 ENV_SOURCE_DEFAULT=0
