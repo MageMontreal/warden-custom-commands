@@ -75,6 +75,10 @@ return [
 
 EOT
 fi
+if [[ "$WARDEN_REDIS" -eq "1" ]]; then
+  :: Flush Redis
+  warden redis flushall
+fi
 
 :: Importing config
 warden env exec php-fpm bin/magento app:config:import --no-interaction || true
@@ -130,17 +134,19 @@ warden env exec php-fpm bin/magento setup:upgrade --no-interaction
 
 :: Configuring application
 before_set_config
-warden db connect -e "UPDATE ${REMOTE_DB_PREFIX}core_config_data SET value = 'https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/' WHERE path IN('web/secure/base_url','web/unsecure/base_url','web/unsecure/base_link_url','web/secure/base_link_url')"
+warden db connect -e "UPDATE ${REMOTE_DB_PREFIX}core_config_data SET value = 'https://${APP_DOMAIN}/' WHERE path IN('web/secure/base_url','web/unsecure/base_url','web/unsecure/base_link_url','web/secure/base_link_url')"
 warden db connect -e "DELETE FROM ${REMOTE_DB_PREFIX}core_config_data WHERE path IN('web/secure/base_static_url','web/secure/base_media_url','web/unsecure/base_static_url','web/unsecure/base_media_url')"
 
-warden env exec php-fpm bin/magento config:set -q --lock-env web/unsecure/base_url "https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/"
-warden env exec php-fpm bin/magento config:set -q --lock-env web/secure/base_url "https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/"
+warden env exec php-fpm bin/magento config:set -q --lock-env web/unsecure/base_url "https://${APP_DOMAIN}/"
+warden env exec php-fpm bin/magento config:set -q --lock-env web/secure/base_url "https://${APP_DOMAIN}/"
 
 warden env exec php-fpm bin/magento config:set -q --lock-env web/secure/offloader_header X-Forwarded-Proto || true
+warden env exec php-fpm bin/magento config:set -q --lock-env dev/grid/async_indexing 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env klaviyo_reclaim_general/general/enable 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env klaviyo_reclaim_webhook/klaviyo_webhooks/using_product_delete_before_webhook 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env paypal/wpp/sandbox_flag 1 || true
-warden env exec php-fpm bin/magento config:set -q --lock-env web/cookie/cookie_domain "${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}" || true
+warden env exec php-fpm bin/magento config:set -q --lock-env web/cookie/cookie_domain "${APP_DOMAIN}" || true
+warden env exec php-fpm bin/magento config:set -q --lock-env web/cookie/cookie_lifetime 86400 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env payment/checkmo/active 1 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env payment/stripe_payments/active 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env payment/stripe_payments_basic/stripe_mode test || true
@@ -162,6 +168,7 @@ warden env exec php-fpm bin/magento config:set -q --lock-env google/analytics/ac
 warden env exec php-fpm bin/magento config:set -q --lock-env google/adwords/active 0 || true
 warden env exec php-fpm bin/magento config:set -q --lock-env system/smtp/transport sendmail || true
 warden env exec php-fpm bin/magento config:set -q --lock-env smtp/general/enabled 0 || true
+warden env exec php-fpm bin/magento config:set -q --lock-env mandrillsmtp/general/active 0 || true
 after_set_config
 ::: Done
 

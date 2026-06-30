@@ -10,12 +10,10 @@ source "${SUBCOMMAND_DIR}"/include
 REQUIRED_FILES=("${WARDEN_ENV_PATH}/auth.json" "${WARDEN_ENV_PATH}/app/etc/config.php")
 DB_DUMP=
 DB_IMPORT=1
+DB_DUMP_OPTIONS=
 AUTO_PULL=1
 MEDIA_SYNC=1
 COMPOSER_INSTALL=1
-APP_DOMAIN="${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}"
-URL_FRONT="https://${APP_DOMAIN}/"
-URL_ADMIN="https://${APP_DOMAIN}/admin/"
 
 ## parse arguments
 while (( "$#" )); do
@@ -40,6 +38,18 @@ while (( "$#" )); do
             DB_DUMP="${1#*=}"
             shift
             ;;
+        --include-customer-data)
+            DB_DUMP_OPTIONS="-c"
+            shift
+            ;;
+        --include-order-data)
+            DB_DUMP_OPTIONS="-o"
+            shift
+            ;;
+        --include-product)
+            DB_DUMP_OPTIONS="-o"
+            shift
+            ;;
         *)
             shift
             ;;
@@ -59,11 +69,13 @@ if [[ $OSTYPE =~ ^darwin ]] && ! which mutagen >/dev/null 2>&1 && which brew >/d
 fi
 
 ## verify mutagen version constraint
-MUTAGEN_VERSION=$(mutagen version 2>/dev/null) || true
-MUTAGEN_REQUIRE=0.11.4
-if [[ $OSTYPE =~ ^darwin ]] && ! test "$(version "${MUTAGEN_VERSION}")" -ge "$(version "${MUTAGEN_REQUIRE}")"; then
-  error "Mutagen ${MUTAGEN_REQUIRE} or greater is required (version ${MUTAGEN_VERSION} is installed)"
-  INIT_ERROR=1
+if [[ $OSTYPE =~ ^darwin ]]; then
+    MUTAGEN_VERSION=$(mutagen version 2>/dev/null) || true
+    MUTAGEN_REQUIRE=0.11.4
+    if ! test "$(version "${MUTAGEN_VERSION}")" -ge "$(version "${MUTAGEN_REQUIRE}")"; then
+      error "Mutagen ${MUTAGEN_REQUIRE} or greater is required (version ${MUTAGEN_VERSION} is installed)"
+      INIT_ERROR=1
+    fi
 fi
 
 ## verify PHP version constraint
@@ -105,9 +117,12 @@ fi
 ## import database only if --skip-db-import is not specified
 if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
+        if [ ! -d "var" ]; then
+            mkdir var
+        fi
         DB_DUMP="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
-        warden db-dump --file="${DB_DUMP}" -e "$ENV_SOURCE"
+        warden db-dump --file="${DB_DUMP}" -e "$ENV_SOURCE" "$DB_DUMP_OPTIONS"
     fi
 
     if [[ "$DB_DUMP" ]]; then

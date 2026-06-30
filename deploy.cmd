@@ -6,15 +6,16 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/include
 
 function deploy_static() {
-    warden shell -c "mr dev:asset:clear"
+    warden env exec php-fpm mr dev:asset:clear > /dev/null 2>&1
     warden env exec php-fpm bin/magento setup:static-content:deploy -f
 }
 
 function deploy_full() {
-  warden shell -c "composer install"
-  warden shell -c "php vendor/bin/ece-patches apply" || true
-  warden shell -c "bin/magento setup:upgrade"
-  warden shell -c "bin/magento setup:di:compile"
+  warden env up
+  warden env exec php-fpm composer install
+  warden env exec php-fpm php vendor/bin/ece-patches apply > /dev/null 2>&1
+  warden env exec php-fpm bin/magento setup:upgrade
+  warden env exec php-fpm bin/magento setup:di:compile
   deploy_static
 }
 

@@ -28,7 +28,7 @@ function remote_db () {
     local db_info=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
     local db_host=$(php -r "\$a=$db_info;echo \$a['host'];")
     local db_user=$(php -r "\$a=$db_info;echo \$a['username'];")
-    local db_pass=$(php -r "\$a=$db_info;echo \$a['password'];")
+    local db_pass=$(php -r "\$a=$db_info;echo \$a['password'];" | jq -sRr @uri)
     local db_name=$(php -r "\$a=$db_info;echo \$a['dbname'];")
 
     DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name"
@@ -75,7 +75,7 @@ function local_sftp() {
     echo "Not Supported."
 }
 function remote_sftp() {
-    SFTP_LINK="sftp://$ENV_SOURCE_USER@$ENV_SOURCE_HOST:$ENV_SOURCE_PORT$ENV_SOURCE_DIR"
+    SFTP_LINK="sftp://$ENV_SOURCE_USER@$ENV_SOURCE_HOST:$ENV_SOURCE_PORT$ENV_SOURCE_DIR/"
     echo -e "SFTP to \033[32m$ENV_SOURCE_VAR\033[0m at: \033[32m$SFTP_LINK\033[0m"
     open_link $SFTP_LINK
 }

@@ -13,9 +13,13 @@ Dump remote database and download it locally. By default, customers, orders and 
 \033[33mArguments:\033[0m
   -f, --file=<file>            Output file.
 
-  -c, --include-customer-data  Include customers data such as customers and orders
+  -c, --include-customer-data  Include customer data (but not order data)
+
+  -o, --include-order-data     Include order data and customer data
 
   -d, --full                   Full dump, no tables or data are excluded
+
+  -i, --import                 Import the database after dump
 
   -e, --environment=<dev|production|staging>  Specific environment to run a database backup from. Default: staging
 
