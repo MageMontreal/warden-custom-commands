@@ -5,23 +5,27 @@ assertDockerRunning
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/include
 
-function deploy_static() {
-    warden env exec php-fpm mr dev:asset:clear > /dev/null 2>&1
-    warden env exec php-fpm bin/magento setup:static-content:deploy -f
+if ! declare -f deploy_static > /dev/null 2>&1; then
+  function deploy_static() {
+      warden env exec php-fpm mr dev:asset:clear > /dev/null 2>&1
+      warden env exec php-fpm bin/magento setup:static-content:deploy -f
+  }
+fi
+
+if ! declare -f deploy_full > /dev/null 2>&1; then
+  function deploy_full() {
+    warden env up
+    warden env exec php-fpm composer install
+    warden env exec php-fpm php vendor/bin/ece-patches apply > /dev/null 2>&1
+    warden env exec php-fpm bin/magento setup:upgrade
+    warden env exec php-fpm bin/magento setup:di:compile
+    deploy_static
+  }
+fi
 }
 
-function deploy_full() {
-  warden env up
-  warden env exec php-fpm composer install
-  warden env exec php-fpm php vendor/bin/ece-patches apply > /dev/null 2>&1
-  warden env exec php-fpm bin/magento setup:upgrade
-  warden env exec php-fpm bin/magento setup:di:compile
-  deploy_static
-}
-
-ENV_HOOKS_FILE="${WARDEN_ENV_PATH}/.warden/hooks"
-if [ -f "${ENV_HOOKS_FILE}" ]; then
-    source "${ENV_HOOKS_FILE}"
+if [[ "$ENV_SOURCE_DEFAULT" -eq "1" ]]; then
+    ENV_SOURCE_VAR="LOCAL"
 fi
 
 while (( "$#" )); do

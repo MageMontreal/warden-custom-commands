@@ -5,15 +5,7 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 source "${SUBCOMMAND_DIR}"/include
 
-IGNORED_TABLES=(
-    'admin_passwords'
-    'admin_system_messages'
-    'admin_user'
-    'admin_user_expiration'
-    'admin_user_session'
-    'adminnotification_inbox'
-    'cache_tag'
-    'catalog_category_product_cl'
+IGNORED_SCHEMA=(
     'catalog_product_index_price_final_idx'
     'catalog_product_index_price_bundle_opt_idx'
     'catalog_product_index_price_bundle_idx'
@@ -42,21 +34,40 @@ IGNORED_TABLES=(
     'catalog_category_product_index_replica'
     'catalog_product_index_eav_replica'
     'catalog_product_index_price_replica'
+    'cataloginventory_stock_status_idx'
+    'cataloginventory_stock_status_tmp'
+    'catalog_category_product_cl'
     'catalog_product_attribute_cl'
     'catalog_product_category_cl'
     'catalog_product_price_cl'
-    'cataloginventory_stock_status_idx'
-    'cataloginventory_stock_status_tmp'
     'cataloginventory_stock_cl'
     'catalogrule_product_cl'
     'catalogrule_rule_cl'
     'catalogsearch_fulltext_cl'
+    'sales_order_data_exporter_cl'
+    'sales_order_data_exporter_cl_index_batches'
+    'store_data_exporter_cl'
+    'mpproductlabels_rule_meta_cl'
+    'swissup_seoimages_index_product_cl'
+    'swissup_prolabels_index_cl'
+    'swissup_seotemplates_index_category_cl'
+    'swissup_seotemplates_index_product_cl'
+    'inventory_cl'
+)
+
+IGNORED_TABLES=(
+    'admin_passwords'
+    'admin_system_messages'
+    'admin_user'
+    'admin_user_expiration'
+    'admin_user_session'
+    'adminnotification_inbox'
+    'cache_tag'
     'catalogsearch_recommendations'
     'core_cache'
     'cron_schedule'
     'customer_log'
     'customer_visitor'
-    'inventory_cl'
     'login_as_customer'
     'mview_state'
     'magento_bulk'
@@ -85,8 +96,6 @@ IGNORED_TABLES=(
     'sales_refunded_aggregated_order'
     'sales_shipping_aggregated'
     'sales_shipping_aggregated_order'
-    'sales_order_data_exporter_cl'
-    'store_data_exporter_cl'
     'search_query'
     'persistent_session'
     'session'
@@ -121,13 +130,8 @@ IGNORED_TABLES=(
     'mailchimp_sync_batches'
     'mailchimp_sync_ecommerce'
     'mailchimp_webhook_request'
-    'mpproductlabels_rule_meta_cl'
     'msp_tfa_trusted'
     'msp_tfa_user_config'
-    'swissup_seoimages_index_product_cl'
-    'swissup_prolabels_index_cl'
-    'swissup_seotemplates_index_category_cl'
-    'swissup_seotemplates_index_product_cl'
     'ub_migrate_step'
     'ub_migrate_map_step_2'
     'ub_migrate_map_step_3'
@@ -154,8 +158,161 @@ IGNORED_TABLES=(
     'ub_migrate_map_step_8_review'
     'ub_migrate_map_step_8_review_summary'
     'ub_migrate_map_step_8_subscriber'
- )
-ignored_opts=()
+)
+
+SALES_TABLES=(
+    'sales_order'
+    'sales_order_address'
+    'sales_order_grid'
+    'sales_order_item'
+    'sales_order_payment'
+    'sales_order_status_history'
+    'sales_order_tax'
+    'sales_order_tax_item'
+    'magento_sales_order_grid_archive'
+    'sales_invoice'
+    'sales_invoice_comment'
+    'sales_invoice_grid'
+    'sales_invoice_item'
+    'magento_sales_invoice_grid_archive'
+    'sales_shipment'
+    'sales_shipment_comment'
+    'sales_shipment_grid'
+    'sales_shipment_item'
+    'sales_shipment_track'
+    'magento_sales_shipment_grid_archive'
+    'sales_creditmemo'
+    'sales_creditmemo_comment'
+    'sales_creditmemo_grid'
+    'sales_creditmemo_item'
+    'magento_sales_creditmemo_grid_archive'
+    'sales_payment_transaction'
+    'salesrule_coupon_usage'
+    'paypal_billing_agreement'
+    'paypal_billing_agreement_order'
+    'paypal_payment_transaction'
+    'paypal_settlement_report'
+    'paypal_settlement_report_row'
+    'magento_rma'
+    'magento_rma_grid'
+    'magento_rma_status_history'
+    'magento_rma_shipping_label'
+    'magento_rma_item_entity'
+    'quote'
+    'quote_address'
+    'quote_address_item'
+    'quote_id_mask'
+    'quote_item'
+    'quote_item_option'
+    'quote_payment'
+    'quote_shipping_rate'
+)
+
+CUSTOMER_TABLES=(
+    'customer_address_entity'
+    'customer_address_entity_datetime'
+    'customer_address_entity_decimal'
+    'customer_address_entity_int'
+    'customer_address_entity_text'
+    'customer_address_entity_varchar'
+    'customer_entity'
+    'customer_entity_datetime'
+    'customer_entity_decimal'
+    'customer_entity_int'
+    'customer_entity_text'
+    'customer_entity_varchar'
+    'customer_grid_flat'
+    'newsletter_subscriber'
+    'product_alert_price'
+    'product_alert_stock'
+    'vault_payment_token'
+    'vault_payment_token_order_payment_link'
+    'wishlist'
+    'wishlist_item'
+    'wishlist_item_option'
+    'company'
+    'company_advanced_customer_entity'
+    'company_credit'
+    'company_credit_history'
+    'company_order_entity'
+    'company_payment'
+    'company_permissions'
+    'company_roles'
+    'company_shipping'
+    'company_structure'
+    'company_team'
+    'company_user_roles'
+    'amasty_company_account_company'
+    'amasty_company_account_customer'
+    'amasty_company_account_order'
+    'amasty_company_account_permission'
+    'amasty_company_account_role'
+    'amasty_company_credit'
+    'amasty_company_credit_event'
+    'amasty_company_credit_overdraft'
+    'amasty_hideprice_request'
+    'amasty_rewards_customer_balance'
+    'amasty_rewards_history'
+    'amasty_rewards_rewards'
+    'amasty_rewards_status_history'
+    'negotiable_quote_company_config'
+    'purchase_order_company_config'
+    'magento_giftcardaccount'
+    'magento_customerbalance'
+    'magento_customerbalance_history'
+    'magento_customersegment_customer'
+    'magento_reward'
+    'magento_reward_history'
+    'aw_ca_company'
+    'aw_ca_company_domain'
+    'aw_ca_company_payments'
+    'aw_ca_company_requisition_lists'
+    'aw_ca_company_user'
+    'aw_ca_group'
+    'aw_ca_role'
+    'aw_ca_order_approval_state'
+    'aw_cl_credit_summary'
+    'aw_cl_customer_group_credit_limit'
+    'aw_cl_job'
+    'aw_cl_transaction'
+    'aw_cl_transaction_entity'
+    'aw_cp_category_permissions'
+    'aw_cp_cms_page_permissions'
+    'aw_cp_product_permissions'
+    'aw_ctq_comment'
+    'aw_ctq_comment_attachment'
+    'aw_ctq_history'
+    'aw_ctq_quote'
+    'aw_net30_order'
+)
+
+if [[ -n "${PROJECT_IGNORED_SCHEMA+1}" ]]; then
+    IGNORED_SCHEMA+=("${PROJECT_IGNORED_SCHEMA[@]}")
+fi
+
+if [[ -n "${PROJECT_IGNORED_TABLES+1}" ]]; then
+    IGNORED_TABLES+=("${PROJECT_IGNORED_TABLES[@]}")
+fi
+
+if [[ -n "${PROJECT_SALES_TABLES+1}" ]]; then
+    IGNORED_TABLES+=("${PROJECT_SALES_TABLES[@]}")
+fi
+
+if [[ -n "${PROJECT_CUSTOMER_TABLES+1}" ]]; then
+    IGNORED_TABLES+=("${PROJECT_CUSTOMER_TABLES[@]}")
+fi
+
+IGNORED_TABLES+=("${IGNORED_SCHEMA[@]}")
+
+# Remove duplicates
+dedupe_array "${IGNORED_SCHEMA[@]}";
+IGNORED_SCHEMA=("${DEDUPED_RESULT[@]}")
+dedupe_array "${IGNORED_TABLES[@]}";
+IGNORED_TABLES=("${DEDUPED_RESULT[@]}")
+
+ignored_tables=()
+ignored_schema=()
+
 
 function dumpCloud () {
     RELATIONSHIP=database-slave
@@ -169,8 +326,11 @@ function dumpCloud () {
     [[ -z "$db_name" ]] && RELATIONSHIP=database
 
     if [[ "$FULL_DUMP" -eq "0" ]]; then
+      for table in "${IGNORED_SCHEMA[@]}"; do
+          ignored_schema+=( --exclude-table="${REMOTE_DB_PREFIX}${table}" )
+      done
       for table in "${IGNORED_TABLES[@]}"; do
-          ignored_opts+=( --exclude-table="${REMOTE_DB_PREFIX}${table}" )
+          ignored_tables+=( --exclude-table="${REMOTE_DB_PREFIX}${table}" )
       done
     fi
 
@@ -180,6 +340,7 @@ function dumpCloud () {
         --environment="$ENV_SOURCE_HOST" \
         --relationship=$RELATIONSHIP \
         --schema-only \
+        ${ignored_schema[@]-} \
         --stdout \
         --gzip > "$DUMP_FILENAME"
 
@@ -187,7 +348,7 @@ function dumpCloud () {
         --project="$CLOUD_PROJECT" \
         --environment="$ENV_SOURCE_HOST" \
         --relationship=$RELATIONSHIP \
-        ${ignored_opts[@]-} \
+        ${ignored_tables[@]-} \
         --stdout \
         --gzip >> "$DUMP_FILENAME"
 
@@ -207,19 +368,22 @@ function dumpPremise () {
     local db_name=$(php -r "\$a=$db_info;echo \$a['dbname'];")
 
     if [[ "$FULL_DUMP" -eq "0" ]]; then
+      for table in "${IGNORED_SCHEMA[@]}"; do
+          ignored_schema+=( --ignore-table="${db_name}.${REMOTE_DB_PREFIX}${table}" )
+      done
       for table in "${IGNORED_TABLES[@]}"; do
-          ignored_opts+=( --ignore-table="${db_name}.${REMOTE_DB_PREFIX}${table}" )
+          ignored_tables+=( --ignore-table="${db_name}.${REMOTE_DB_PREFIX}${table}" )
       done
     fi
 
     echo -e "⌛ \033[1;32mDumping \033[33m${db_name}\033[1;32m database from \033[33m${ENV_SOURCE_HOST}\033[1;32m...\033[0m"
 
     local mysql="export MYSQL_PWD='${db_pass}';mysqldump -h$db_host -u$db_user $db_name"
-    local db_dump="$mysql --no-tablespaces --single-transaction --no-data --skip-triggers --skip-comments --routines | gzip"
+    local db_dump="$mysql --default-character-set=utf8mb4 --no-tablespaces --single-transaction --no-data --skip-triggers --skip-comments --routines "${ignored_schema[@]-}" | gzip"
 
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" > "$DUMP_FILENAME"
 
-    local db_dump="$mysql --no-tablespaces --single-transaction --skip-triggers --skip-comments --no-create-info "${ignored_opts[@]-}" | gzip"
+    local db_dump="$mysql --default-character-set=utf8mb4 --no-tablespaces --single-transaction --skip-triggers --skip-comments --no-create-info "${ignored_tables[@]-}" | gzip"
 
     ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" >> "$DUMP_FILENAME"
     echo -e "✅ \033[32mDatabase dump complete! File: $DUMP_FILENAME\033[0m"
@@ -290,132 +454,11 @@ fi
 
 if [[ "$CUSTOM_EXCLUDE" -eq "0" && "$FULL_DUMP" -eq "0" ]]; then
     if [[ "$INCLUDE_ORDER_DATA" -eq "0" ]]; then
-        IGNORED_TABLES+=(
-          'sales_order'
-          'sales_order_address'
-          'sales_order_grid'
-          'sales_order_item'
-          'sales_order_payment'
-          'sales_order_status_history'
-          'sales_order_tax'
-          'sales_order_tax_item'
-          'magento_sales_order_grid_archive'
-          'sales_invoice'
-          'sales_invoice_comment'
-          'sales_invoice_grid'
-          'sales_invoice_item'
-          'magento_sales_invoice_grid_archive'
-          'sales_shipment'
-          'sales_shipment_comment'
-          'sales_shipment_grid'
-          'sales_shipment_item'
-          'sales_shipment_track'
-          'magento_sales_shipment_grid_archive'
-          'sales_creditmemo'
-          'sales_creditmemo_comment'
-          'sales_creditmemo_grid'
-          'sales_creditmemo_item'
-          'magento_sales_creditmemo_grid_archive'
-          'sales_payment_transaction'
-          'salesrule_coupon_usage'
-          'paypal_billing_agreement'
-          'paypal_billing_agreement_order'
-          'paypal_payment_transaction'
-          'paypal_settlement_report'
-          'paypal_settlement_report_row'
-          'magento_rma'
-          'magento_rma_grid'
-          'magento_rma_status_history'
-          'magento_rma_shipping_label'
-          'magento_rma_item_entity'
-          'quote'
-          'quote_address'
-          'quote_address_item'
-          'quote_id_mask'
-          'quote_item'
-          'quote_item_option'
-          'quote_payment'
-          'quote_shipping_rate'
-        )
+        IGNORED_TABLES+=("${SALES_TABLES[@]}")
     fi
 
     if [[ "$INCLUDE_CUSTOMER_DATA" -eq "0" ]]; then
-        IGNORED_TABLES+=(
-          'customer_address_entity'
-          'customer_address_entity_datetime'
-          'customer_address_entity_decimal'
-          'customer_address_entity_int'
-          'customer_address_entity_text'
-          'customer_address_entity_varchar'
-          'customer_entity'
-          'customer_entity_datetime'
-          'customer_entity_decimal'
-          'customer_entity_int'
-          'customer_entity_text'
-          'customer_entity_varchar'
-          'customer_grid_flat'
-          'newsletter_subscriber'
-          'product_alert_price'
-          'product_alert_stock'
-          'vault_payment_token'
-          'vault_payment_token_order_payment_link'
-          'wishlist'
-          'wishlist_item'
-          'wishlist_item_option'
-          'company'
-          'company_advanced_customer_entity'
-          'company_credit'
-          'company_credit_history'
-          'company_order_entity'
-          'company_payment'
-          'company_permissions'
-          'company_roles'
-          'company_shipping'
-          'company_structure'
-          'company_team'
-          'company_user_roles'
-          'amasty_company_account_company'
-          'amasty_company_account_customer'
-          'amasty_company_account_order'
-          'amasty_company_account_permission'
-          'amasty_company_account_role'
-          'amasty_company_credit'
-          'amasty_company_credit_event'
-          'amasty_company_credit_overdraft'
-          'amasty_rewards_customer_balance'
-          'amasty_rewards_history'
-          'amasty_rewards_rewards'
-          'amasty_rewards_status_history'
-          'negotiable_quote_company_config'
-          'purchase_order_company_config'
-          'magento_giftcardaccount'
-          'magento_customerbalance'
-          'magento_customerbalance_history'
-          'magento_customersegment_customer'
-          'magento_reward'
-          'magento_reward_history'
-          'aw_ca_company'
-          'aw_ca_company_domain'
-          'aw_ca_company_payments'
-          'aw_ca_company_requisition_lists'
-          'aw_ca_company_user'
-          'aw_ca_group'
-          'aw_ca_role'
-          'aw_ca_order_approval_state'
-          'aw_cl_credit_summary'
-          'aw_cl_customer_group_credit_limit'
-          'aw_cl_job'
-          'aw_cl_transaction'
-          'aw_cl_transaction_entity'
-          'aw_cp_category_permissions'
-          'aw_cp_cms_page_permissions'
-          'aw_cp_product_permissions'
-          'aw_ctq_comment'
-          'aw_ctq_comment_attachment'
-          'aw_ctq_history'
-          'aw_ctq_quote'
-          'aw_net30_order'
-        )
+        IGNORED_TABLES+=("${CUSTOMER_TABLES[@]}")
     fi
 fi
 

@@ -12,6 +12,10 @@ function ::: {
   echo -e "\033[32m$@\033[0m"
 }
 
+function log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+}
+
 function array_contains() {
     local array="$1[@]"
     local seeking=$2
@@ -23,6 +27,11 @@ function array_contains() {
         fi
     done
     echo $in
+}
+
+dedupe_array() {
+    local IFS=$'\n'
+    DEDUPED_RESULT=($(printf '%s\n' "$@" | sort -u))
 }
 
 WARDEN_ENV_PATH="$(locateEnvPath)" || exit $?
@@ -88,3 +97,8 @@ fi
 APP_DOMAIN="${TRAEFIK_SUBDOMAIN:+${TRAEFIK_SUBDOMAIN}.}${TRAEFIK_DOMAIN}"
 URL_FRONT="https://${APP_DOMAIN}/"
 URL_ADMIN="https://${APP_DOMAIN}/admin/"
+
+ENV_HOOKS_FILE="${WARDEN_ENV_PATH}/.warden/hooks"
+if [ -f "${ENV_HOOKS_FILE}" ]; then
+    source "${ENV_HOOKS_FILE}"
+fi
