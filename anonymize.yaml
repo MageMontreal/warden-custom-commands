@@ -1,0 +1,980 @@
+# Warden DB Dump Configuration
+#
+# Format compatible with Smile gdpr-dump.
+# See: https://github.com/Smile-SA/gdpr-dump/blob/next/app/config/templates/magento2.yaml
+#
+# Table-level directives:
+#   skip: true              Exclude entirely (no schema, no data) — for disposable artifacts (_idx, _tmp, _cl, _replica)
+#   truncate: true          Keep schema, exclude data — for sessions, cache, logs, index base tables
+#   group: sales            Excluded by default, included with -o
+#   group: customer         Excluded by default, included with -c
+#
+# Converter types (for anonymization):
+#   randomizeEmail          SHA2 hash + @warden.test (consistent across tables)
+#   randomizeText           Inferred from column name (firstname→Anon, lastname→Customer, etc.)
+#   randomizeNumber         '0000000000'
+#   setNull                 NULL
+#   setValue                Literal value (requires parameters.value)
+#   setPassword             Pre-computed Magento SHA-256 hash for password123
+#   anonymizeDate           NULL
+#   anonymizeDateTime       NULL
+#   faker                   Supports parameters.formatter: ipv4 → '127.0.0.1'
+#   hashValue               SHA2 hash (12 hex chars) — deterministic, identical values stay identical
+#   jsonMethodTitle         Keep only method_title key in JSON, discard everything else
+#
+# Project overrides: create .warden/anonymize.yaml in your project root.
+# Files are merged — the project file adds new tables and extends existing ones.
+
+tables:
+
+  # ===========================================================================
+  # Skipped tables (no schema, no data) — disposable artifacts
+  # ===========================================================================
+
+  # Index tables
+  catalog_product_index_price_final_idx:
+    skip: true
+  catalog_product_index_price_bundle_opt_idx:
+    skip: true
+  catalog_product_index_price_bundle_idx:
+    skip: true
+  catalog_product_index_price_downlod_idx:
+    skip: true
+  catalog_product_index_price_cfg_opt_idx:
+    skip: true
+  catalog_product_index_price_opt_idx:
+    skip: true
+  catalog_product_index_price_cfg_opt_agr_idx:
+    skip: true
+  catalog_product_index_price_opt_agr_idx:
+    skip: true
+  catalog_product_index_price_bundle_sel_idx:
+    skip: true
+  catalog_product_index_eav_decimal_idx:
+    skip: true
+  catalog_product_index_eav_idx:
+    skip: true
+  catalog_product_index_price_idx:
+    skip: true
+  cataloginventory_stock_status_idx:
+    skip: true
+
+  # Temp tables
+  catalog_product_index_price_downlod_tmp:
+    skip: true
+  catalog_product_index_price_cfg_opt_tmp:
+    skip: true
+  catalog_product_index_eav_tmp:
+    skip: true
+  catalog_product_index_price_tmp:
+    skip: true
+  catalog_product_index_price_opt_tmp:
+    skip: true
+  catalog_product_index_price_cfg_opt_agr_tmp:
+    skip: true
+  catalog_product_index_eav_decimal_tmp:
+    skip: true
+  catalog_product_index_price_opt_agr_tmp:
+    skip: true
+  catalog_product_index_price_bundle_tmp:
+    skip: true
+  catalog_product_index_price_bundle_sel_tmp:
+    skip: true
+  catalog_product_index_price_final_tmp:
+    skip: true
+  catalog_product_index_price_bundle_opt_tmp:
+    skip: true
+  catalog_category_product_index_tmp:
+    skip: true
+  cataloginventory_stock_status_tmp:
+    skip: true
+
+  # Replica tables
+  catalog_category_product_index_replica:
+    skip: true
+  catalog_product_index_eav_decimal_replica:
+    skip: true
+  catalog_product_index_eav_replica:
+    skip: true
+  catalog_product_index_price_replica:
+    skip: true
+  cataloginventory_stock_status_replica:
+    skip: true
+  catalogrule_group_website_replica:
+    skip: true
+  catalogrule_product_price_replica:
+    skip: true
+  catalogrule_product_replica:
+    skip: true
+
+  # ===========================================================================
+  # Truncated tables (schema kept, data excluded)
+  # ===========================================================================
+
+  # Index tables (main)
+  catalog_category_product_index:
+    truncate: true
+  catalog_compare_item:
+    truncate: true
+  catalog_compare_list:
+    truncate: true
+  catalog_product_frontend_action:
+    truncate: true
+  catalog_product_index_eav:
+    truncate: true
+  catalog_product_index_eav_decimal:
+    truncate: true
+  catalog_product_index_price:
+    truncate: true
+  catalog_product_index_tier_price:
+    truncate: true
+  catalog_product_index_website:
+    truncate: true
+  cataloginventory_stock_status:
+    truncate: true
+  catalogrule_group_website:
+    truncate: true
+  catalogrule_product:
+    truncate: true
+  catalogrule_product_price:
+    truncate: true
+
+  # Import/export
+  importexport_importdata:
+    skip: true
+
+  # Changelog tables
+  catalog_category_product_cl:
+    skip: true
+  catalog_product_attribute_cl:
+    skip: true
+  catalog_product_category_cl:
+    skip: true
+  catalog_product_price_cl:
+    skip: true
+  cataloginventory_stock_cl:
+    skip: true
+  catalogrule_product_cl:
+    skip: true
+  catalogrule_rule_cl:
+    skip: true
+  catalogsearch_fulltext_cl:
+    skip: true
+  sales_order_data_exporter_cl:
+    skip: true
+  sales_order_data_exporter_cl_index_batches:
+    skip: true
+  store_data_exporter_cl:
+    skip: true
+  customer_dummy_cl:
+    skip: true
+  design_config_dummy_cl:
+    skip: true
+  inventory_cl:
+    skip: true
+
+  # Admin / system tables
+  admin_passwords:
+    truncate: true
+  admin_system_messages:
+    truncate: true
+  admin_user:
+    truncate: true
+  admin_user_expiration:
+    truncate: true
+  admin_user_session:
+    truncate: true
+  adminnotification_inbox:
+    truncate: true
+
+  # Cache / session / cron
+  cache:
+    truncate: true
+  cache_tag:
+    truncate: true
+  captcha_log:
+    truncate: true
+  core_cache:
+    truncate: true
+  cron_schedule:
+    truncate: true
+  persistent_session:
+    truncate: true
+  session:
+    truncate: true
+  mview_state:
+    truncate: true
+  ui_bookmark:
+    truncate: true
+
+  # Logs / visitors
+  customer_log:
+    truncate: true
+  customer_visitor:
+    truncate: true
+  login_as_customer:
+    truncate: true
+  magento_acknowledged_bulk:
+    truncate: true
+  magento_bulk:
+    truncate: true
+  magento_login_as_customer_log:
+    truncate: true
+  magento_logging_event:
+    truncate: true
+  magento_logging_event_changes:
+    truncate: true
+  magento_operation:
+    truncate: true
+
+  # Newsletter queue
+  newsletter_problem:
+    truncate: true
+  newsletter_queue:
+    truncate: true
+  newsletter_queue_link:
+    truncate: true
+  newsletter_queue_store_link:
+    truncate: true
+
+  # OAuth
+  oauth_nonce:
+    truncate: true
+  oauth_token_request_log:
+    truncate: true
+
+  # Password reset
+  password_reset_request_event:
+    truncate: true
+
+  # Queue
+  queue_lock:
+    truncate: true
+  queue_message:
+    truncate: true
+  queue_message_status:
+    truncate: true
+  queue_poison_pill:
+    truncate: true
+
+  # Release notifications
+  release_notification_viewer_log:
+    truncate: true
+
+  # Send to friend
+  sendfriend_log:
+    truncate: true
+
+  # Reports
+  report_event:
+    truncate: true
+  report_compared_product_index:
+    truncate: true
+  report_viewed_product_aggregated_daily:
+    truncate: true
+  report_viewed_product_aggregated_monthly:
+    truncate: true
+  report_viewed_product_aggregated_yearly:
+    truncate: true
+  report_viewed_product_index:
+    truncate: true
+  reporting_module_status:
+    truncate: true
+  reporting_system_updates:
+    truncate: true
+  reporting_users:
+    truncate: true
+
+  # Sales aggregated
+  sales_bestsellers_aggregated_daily:
+    truncate: true
+  sales_bestsellers_aggregated_monthly:
+    truncate: true
+  sales_bestsellers_aggregated_yearly:
+    truncate: true
+  sales_invoiced_aggregated:
+    truncate: true
+  sales_invoiced_aggregated_order:
+    truncate: true
+  sales_order_aggregated_created:
+    truncate: true
+  sales_order_aggregated_updated:
+    truncate: true
+  sales_refunded_aggregated:
+    truncate: true
+  sales_refunded_aggregated_order:
+    truncate: true
+  sales_shipping_aggregated:
+    truncate: true
+  sales_shipping_aggregated_order:
+    truncate: true
+  salesrule_coupon_aggregated:
+    truncate: true
+  salesrule_coupon_aggregated_order:
+    truncate: true
+  salesrule_coupon_aggregated_updated:
+    truncate: true
+  tax_order_aggregated_created:
+    truncate: true
+  tax_order_aggregated_updated:
+    truncate: true
+
+  # Search
+  catalogsearch_recommendations:
+    truncate: true
+  search_query:
+    truncate: true
+
+  # ===========================================================================
+  # Sales tables (excluded by default, included with -o)
+  # ===========================================================================
+
+  sales_order:
+    group: sales
+    converters:
+      customer_dob:
+        converter: anonymizeDateTime
+      customer_email:
+        converter: randomizeEmail
+      customer_firstname:
+        converter: randomizeText
+      customer_lastname:
+        converter: randomizeText
+      customer_middlename:
+        converter: randomizeText
+      remote_ip:
+        converter: faker
+        parameters:
+          formatter: ipv4
+      customer_note:
+        converter: setNull
+
+  sales_order_address:
+    group: sales
+    converters:
+      email:
+        converter: randomizeEmail
+      firstname:
+        converter: randomizeText
+      middlename:
+        converter: randomizeText
+      lastname:
+        converter: randomizeText
+      telephone:
+        converter: randomizeNumber
+      fax:
+        converter: randomizeNumber
+
+  sales_order_grid:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      shipping_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+
+  sales_order_item:
+    group: sales
+
+  sales_order_payment:
+    group: sales
+    converters:
+      last_trans_id:
+        converter: setNull
+      cc_trans_id:
+        converter: setNull
+      cc_owner:
+        converter: setNull
+      cc_approval:
+        converter: setNull
+      cc_number_enc:
+        converter: setNull
+      cc_last_4:
+        converter: setNull
+      cc_cid_enc:
+        converter: setNull
+      cc_ss_owner:
+        converter: setNull
+      cc_debug_request_body:
+        converter: setNull
+      cc_debug_response_body:
+        converter: setNull
+      cc_debug_response_serialized:
+        converter: setNull
+      echeck_account_name:
+        converter: setNull
+      echeck_bank_name:
+        converter: setNull
+      additional_information:
+        converter: jsonMethodTitle
+
+  sales_order_status_history:
+    group: sales
+
+  sales_order_tax:
+    group: sales
+
+  sales_order_tax_item:
+    group: sales
+
+  sales_invoice:
+    group: sales
+    converters:
+      customer_note:
+        converter: setNull
+
+  sales_invoice_comment:
+    group: sales
+    converters:
+      comment:
+        converter: setNull
+
+  sales_invoice_grid:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+
+  sales_invoice_item:
+    group: sales
+
+  sales_shipment:
+    group: sales
+    converters:
+      customer_note:
+        converter: setNull
+
+  sales_shipment_comment:
+    group: sales
+    converters:
+      comment:
+        converter: setNull
+
+  sales_shipment_grid:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      shipping_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+
+  sales_shipment_item:
+    group: sales
+
+  sales_shipment_track:
+    group: sales
+    converters:
+      track_number:
+        converter: randomizeText
+
+  sales_creditmemo:
+    group: sales
+    converters:
+      customer_note:
+        converter: setNull
+
+  sales_creditmemo_comment:
+    group: sales
+    converters:
+      comment:
+        converter: setNull
+
+  sales_creditmemo_grid:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+
+  sales_creditmemo_item:
+    group: sales
+
+  sales_payment_transaction:
+    group: sales
+
+  salesrule_coupon_usage:
+    group: sales
+
+  salesrule_customer:
+    group: sales
+
+  downloadable_link_purchased:
+    group: sales
+  downloadable_link_purchased_item:
+    group: sales
+
+  gift_message:
+    group: sales
+    converters:
+      sender:
+        converter: randomizeEmail
+      recipient:
+        converter: randomizeEmail
+      message:
+        converter: setNull
+
+  # Inventory
+  inventory_reservation:
+    group: sales
+  inventory_shipment_source:
+    group: sales
+  inventory_order_notification:
+    group: sales
+  inventory_pickup_location_order:
+    group: sales
+  inventory_pickup_location_quote_address:
+    group: sales
+
+  # Sequences
+  sequence_creditmemo_0:
+    group: sales
+  sequence_creditmemo_1:
+    group: sales
+  sequence_creditmemo_2:
+    group: sales
+  sequence_invoice_0:
+    group: sales
+  sequence_invoice_1:
+    group: sales
+  sequence_invoice_2:
+    group: sales
+  sequence_order_0:
+    group: sales
+  sequence_order_1:
+    group: sales
+  sequence_order_2:
+    group: sales
+  sequence_shipment_0:
+    group: sales
+  sequence_shipment_1:
+    group: sales
+  sequence_shipment_2:
+    group: sales
+
+  sales_order_confirm_cancel:
+    group: sales
+  sales_order_status_change_history:
+    group: sales
+
+  quote:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_firstname:
+        converter: randomizeText
+      customer_middlename:
+        converter: randomizeText
+      customer_lastname:
+        converter: randomizeText
+      customer_dob:
+        converter: anonymizeDateTime
+      customer_note:
+        converter: setNull
+      remote_ip:
+        converter: faker
+        parameters:
+          formatter: ipv4
+      password_hash:
+        converter: setNull
+
+  quote_address:
+    group: sales
+    converters:
+      email:
+        converter: randomizeEmail
+      firstname:
+        converter: randomizeText
+      middlename:
+        converter: randomizeText
+      lastname:
+        converter: randomizeText
+      telephone:
+        converter: randomizeNumber
+      fax:
+        converter: randomizeNumber
+
+  quote_address_item:
+    group: sales
+
+  quote_id_mask:
+    group: sales
+
+  quote_item:
+    group: sales
+
+  quote_item_option:
+    group: sales
+
+  quote_payment:
+    group: sales
+    converters:
+      cc_number_enc:
+        converter: setNull
+      cc_last_4:
+        converter: setNull
+      cc_cid_enc:
+        converter: setNull
+      cc_owner:
+        converter: setNull
+      cc_ss_owner:
+        converter: setNull
+      additional_information:
+        converter: jsonMethodTitle
+
+  quote_shipping_rate:
+    group: sales
+
+  # PayPal
+  paypal_billing_agreement:
+    group: customer
+  paypal_billing_agreement_order:
+    group: sales
+  paypal_payment_transaction:
+    group: sales
+  paypal_settlement_report:
+    group: sales
+  paypal_settlement_report_row:
+    group: sales
+
+  # RMA (Commerce)
+  magento_rma:
+    group: sales
+    converters:
+      customer_custom_email:
+        converter: randomizeEmail
+  magento_rma_grid:
+    group: sales
+  magento_rma_status_history:
+    group: sales
+    converters:
+      comment:
+        converter: setNull
+  magento_rma_shipping_label:
+    group: sales
+    converters:
+      track_number:
+        converter: randomizeText
+  magento_rma_item_entity:
+    group: sales
+
+  # Archive grids (Commerce)
+  magento_sales_order_grid_archive:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      shipping_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+      shipping_information:
+        converter: randomizeText
+
+  magento_sales_invoice_grid_archive:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+      shipping_information:
+        converter: randomizeText
+
+  magento_sales_shipment_grid_archive:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      shipping_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+      shipping_information:
+        converter: randomizeText
+
+  magento_sales_creditmemo_grid_archive:
+    group: sales
+    converters:
+      customer_email:
+        converter: randomizeEmail
+      customer_name:
+        converter: randomizeText
+      billing_name:
+        converter: randomizeText
+      billing_address:
+        converter: randomizeText
+      shipping_address:
+        converter: randomizeText
+      shipping_information:
+        converter: randomizeText
+
+  # ===========================================================================
+  # Customer tables (excluded by default, included with -c)
+  # ===========================================================================
+
+  customer_entity:
+    group: customer
+    converters:
+      email:
+        converter: randomizeEmail
+      firstname:
+        converter: randomizeText
+      middlename:
+        converter: randomizeText
+      lastname:
+        converter: randomizeText
+      dob:
+        converter: anonymizeDate
+      password_hash:
+        converter: setPassword
+      rp_token:
+        converter: setNull
+      failures_num:
+        converter: setValue
+        parameters:
+          value: 0
+      first_failure:
+        converter: setNull
+      lock_expires:
+        converter: setNull
+
+  customer_address_entity:
+    group: customer
+    converters:
+      firstname:
+        converter: randomizeText
+      middlename:
+        converter: randomizeText
+      lastname:
+        converter: randomizeText
+      company:
+        converter: randomizeText
+      telephone:
+        converter: randomizeNumber
+      fax:
+        converter: randomizeNumber
+
+  customer_entity_datetime:
+    group: customer
+  customer_entity_decimal:
+    group: customer
+  customer_entity_int:
+    group: customer
+  customer_entity_text:
+    group: customer
+  customer_entity_varchar:
+    group: customer
+  customer_address_entity_datetime:
+    group: customer
+  customer_address_entity_decimal:
+    group: customer
+  customer_address_entity_int:
+    group: customer
+  customer_address_entity_text:
+    group: customer
+  customer_address_entity_varchar:
+    group: customer
+
+  customer_grid_flat:
+    group: customer
+    converters:
+      name:
+        converter: randomizeText
+      email:
+        converter: randomizeEmail
+      dob:
+        converter: anonymizeDate
+      shipping_full:
+        converter: randomizeText
+      billing_full:
+        converter: randomizeText
+      billing_firstname:
+        converter: randomizeText
+      billing_lastname:
+        converter: randomizeText
+      billing_telephone:
+        converter: randomizeNumber
+      billing_fax:
+        converter: randomizeNumber
+      billing_street:
+        converter: randomizeText
+      billing_city:
+        converter: randomizeText
+      billing_company:
+        converter: randomizeText
+
+  newsletter_subscriber:
+    group: customer
+    converters:
+      subscriber_email:
+        converter: randomizeEmail
+      subscriber_confirm_code:
+        converter: setNull
+
+  product_alert_price:
+    group: customer
+  product_alert_stock:
+    group: customer
+  vault_payment_token:
+    group: customer
+  vault_payment_token_order_payment_link:
+    group: customer
+  wishlist:
+    group: customer
+  wishlist_item:
+    group: customer
+  wishlist_item_option:
+    group: customer
+
+  # Reviews / ratings
+  review:
+    group: customer
+  review_store:
+    group: customer
+
+  # OAuth tokens
+  oauth_token:
+    group: customer
+
+  # Company (B2B - Commerce)
+  company:
+    group: customer
+    converters:
+      company_email:
+        converter: randomizeEmail
+      telephone:
+        converter: randomizeNumber
+  company_advanced_customer_entity:
+    group: customer
+    converters:
+      telephone:
+        converter: randomizeNumber
+  company_credit:
+    group: customer
+  company_credit_history:
+    group: customer
+    converters:
+      comment:
+        converter: setNull
+  company_order_entity:
+    group: customer
+  company_payment:
+    group: customer
+  company_permissions:
+    group: customer
+  company_roles:
+    group: customer
+  company_shipping:
+    group: customer
+  company_structure:
+    group: customer
+  company_team:
+    group: customer
+  company_user_roles:
+    group: customer
+
+  # Negotiable quotes (B2B)
+  negotiable_quote_company_config:
+    group: customer
+  purchase_order_company_config:
+    group: customer
+
+  # Commerce features
+  magento_giftcardaccount:
+    group: customer
+  magento_customerbalance:
+    group: customer
+  magento_customerbalance_history:
+    group: customer
+  magento_customersegment_customer:
+    group: customer
+  magento_reward:
+    group: customer
+  magento_reward_history:
+    group: customer
+
+  # ===========================================================================
+  # Tables always included (with anonymization converters)
+  # ===========================================================================
+
+  rating_option_vote:
+    group: customer
+    converters:
+      remote_ip:
+        converter: faker
+        parameters:
+          formatter: ipv4
+      remote_ip_long:
+        converter: setValue
+        parameters:
+          value: 0
+
+  review_detail:
+    group: customer
+    converters:
+      nickname:
+        converter: randomizeText
+
+  integration:
+    converters:
+      email:
+        converter: randomizeEmail
+
+  inventory_source:
+    converters:
+      email:
+        converter: randomizeEmail
+      phone:
+        converter: randomizeNumber
+      fax:
+        converter: randomizeNumber

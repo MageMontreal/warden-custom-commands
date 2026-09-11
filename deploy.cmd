@@ -16,7 +16,7 @@ if ! declare -f deploy_full > /dev/null 2>&1; then
   function deploy_full() {
     warden env up
     warden env exec php-fpm composer install
-    warden env exec php-fpm php vendor/bin/ece-patches apply > /dev/null 2>&1
+    warden env exec php-fpm php vendor/bin/ece-patches apply || true > /dev/null 2>&1
     warden env exec php-fpm bin/magento setup:upgrade
     warden env exec php-fpm bin/magento setup:di:compile
     deploy_static

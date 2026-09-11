@@ -2,313 +2,43 @@
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
 
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
+COMMANDS_DIR="$(cd "${SUBCOMMAND_DIR}" && pwd)"
 
 source "${SUBCOMMAND_DIR}"/include
 
-IGNORED_SCHEMA=(
-    'catalog_product_index_price_final_idx'
-    'catalog_product_index_price_bundle_opt_idx'
-    'catalog_product_index_price_bundle_idx'
-    'catalog_product_index_price_downlod_idx'
-    'catalog_product_index_price_cfg_opt_idx'
-    'catalog_product_index_price_opt_idx'
-    'catalog_product_index_price_cfg_opt_agr_idx'
-    'catalog_product_index_price_opt_agr_idx'
-    'catalog_product_index_price_bundle_sel_idx'
-    'catalog_product_index_eav_decimal_idx'
-    'catalog_product_index_eav_idx'
-    'catalog_product_index_price_idx'
-    'catalog_product_index_price_downlod_tmp'
-    'catalog_product_index_price_cfg_opt_tmp'
-    'catalog_product_index_eav_tmp'
-    'catalog_product_index_price_tmp'
-    'catalog_product_index_price_opt_tmp'
-    'catalog_product_index_price_cfg_opt_agr_tmp'
-    'catalog_product_index_eav_decimal_tmp'
-    'catalog_product_index_price_opt_agr_tmp'
-    'catalog_product_index_price_bundle_tmp'
-    'catalog_product_index_price_bundle_sel_tmp'
-    'catalog_product_index_price_final_tmp'
-    'catalog_product_index_price_bundle_opt_tmp'
-    'catalog_category_product_index_tmp'
-    'catalog_category_product_index_replica'
-    'catalog_product_index_eav_replica'
-    'catalog_product_index_price_replica'
-    'cataloginventory_stock_status_idx'
-    'cataloginventory_stock_status_tmp'
-    'catalog_category_product_cl'
-    'catalog_product_attribute_cl'
-    'catalog_product_category_cl'
-    'catalog_product_price_cl'
-    'cataloginventory_stock_cl'
-    'catalogrule_product_cl'
-    'catalogrule_rule_cl'
-    'catalogsearch_fulltext_cl'
-    'sales_order_data_exporter_cl'
-    'sales_order_data_exporter_cl_index_batches'
-    'store_data_exporter_cl'
-    'mpproductlabels_rule_meta_cl'
-    'swissup_seoimages_index_product_cl'
-    'swissup_prolabels_index_cl'
-    'swissup_seotemplates_index_category_cl'
-    'swissup_seotemplates_index_product_cl'
-    'inventory_cl'
-)
-
-IGNORED_TABLES=(
-    'admin_passwords'
-    'admin_system_messages'
-    'admin_user'
-    'admin_user_expiration'
-    'admin_user_session'
-    'adminnotification_inbox'
-    'cache_tag'
-    'catalogsearch_recommendations'
-    'core_cache'
-    'cron_schedule'
-    'customer_log'
-    'customer_visitor'
-    'login_as_customer'
-    'mview_state'
-    'magento_bulk'
-    'magento_login_as_customer_log'
-    'magento_logging_event'
-    'magento_logging_event_changes'
-    'queue_message'
-    'queue_message_status'
-    'report_event'
-    'report_compared_product_index'
-    'report_viewed_product_aggregated_daily'
-    'report_viewed_product_aggregated_monthly'
-    'report_viewed_product_aggregated_yearly'
-    'report_viewed_product_index'
-    'reporting_module_status'
-    'reporting_system_updates'
-    'reporting_users'
-    'sales_bestsellers_aggregated_daily'
-    'sales_bestsellers_aggregated_monthly'
-    'sales_bestsellers_aggregated_yearly'
-    'sales_invoiced_aggregated'
-    'sales_invoiced_aggregated_order'
-    'sales_order_aggregated_created'
-    'sales_order_aggregated_updated'
-    'sales_refunded_aggregated'
-    'sales_refunded_aggregated_order'
-    'sales_shipping_aggregated'
-    'sales_shipping_aggregated_order'
-    'search_query'
-    'persistent_session'
-    'session'
-    'ui_bookmark'
-    'amasty_fpc_activity'
-    'amasty_fpc_context_debug'
-    'amasty_fpc_flushes_log'
-    'amasty_fpc_job_queue'
-    'amasty_fpc_log'
-    'amasty_fpc_pages_to_flush'
-    'amasty_fpc_queue_page'
-    'amasty_fpc_reports'
-    'amasty_xsearch_users_search'
-    'amasty_reports_abandoned_cart'
-    'amasty_reports_customers_customers_daily'
-    'amasty_reports_customers_customers_monthly'
-    'amasty_reports_customers_customers_weekly'
-    'amasty_reports_customers_customers_yearly'
-    'amasty_geoip_block'
-    'amasty_geoip_block_v6'
-    'amasty_geoip_ip_log'
-    'amasty_geoip_location'
-    'kiwicommerce_activity'
-    'kiwicommerce_activity_detail'
-    'kiwicommerce_activity_log'
-    'kiwicommerce_login_activity'
-    'kl_events'
-    'kl_products'
-    'kl_sync'
-    'mageplaza_smtp_log'
-    'mailchimp_errors'
-    'mailchimp_sync_batches'
-    'mailchimp_sync_ecommerce'
-    'mailchimp_webhook_request'
-    'msp_tfa_trusted'
-    'msp_tfa_user_config'
-    'ub_migrate_step'
-    'ub_migrate_map_step_2'
-    'ub_migrate_map_step_3'
-    'ub_migrate_map_step_3_attribute'
-    'ub_migrate_map_step_3_attribute_option'
-    'ub_migrate_map_step_4'
-    'ub_migrate_map_step_5'
-    'ub_migrate_map_step_5_product_download'
-    'ub_migrate_map_step_5_product_option'
-    'ub_migrate_map_step_6'
-    'ub_migrate_map_step_6_customer_address'
-    'ub_migrate_map_step_7'
-    'ub_migrate_map_step_7_invoice'
-    'ub_migrate_map_step_7_invoice_item'
-    'ub_migrate_map_step_7_order'
-    'ub_migrate_map_step_7_order_address'
-    'ub_migrate_map_step_7_order_item'
-    'ub_migrate_map_step_7_quote'
-    'ub_migrate_map_step_7_quote_address'
-    'ub_migrate_map_step_7_quote_item'
-    'ub_migrate_map_step_8'
-    'ub_migrate_map_step_8_downloadable_link_purchased'
-    'ub_migrate_map_step_8_rating'
-    'ub_migrate_map_step_8_review'
-    'ub_migrate_map_step_8_review_summary'
-    'ub_migrate_map_step_8_subscriber'
-)
-
-SALES_TABLES=(
-    'sales_order'
-    'sales_order_address'
-    'sales_order_grid'
-    'sales_order_item'
-    'sales_order_payment'
-    'sales_order_status_history'
-    'sales_order_tax'
-    'sales_order_tax_item'
-    'magento_sales_order_grid_archive'
-    'sales_invoice'
-    'sales_invoice_comment'
-    'sales_invoice_grid'
-    'sales_invoice_item'
-    'magento_sales_invoice_grid_archive'
-    'sales_shipment'
-    'sales_shipment_comment'
-    'sales_shipment_grid'
-    'sales_shipment_item'
-    'sales_shipment_track'
-    'magento_sales_shipment_grid_archive'
-    'sales_creditmemo'
-    'sales_creditmemo_comment'
-    'sales_creditmemo_grid'
-    'sales_creditmemo_item'
-    'magento_sales_creditmemo_grid_archive'
-    'sales_payment_transaction'
-    'salesrule_coupon_usage'
-    'paypal_billing_agreement'
-    'paypal_billing_agreement_order'
-    'paypal_payment_transaction'
-    'paypal_settlement_report'
-    'paypal_settlement_report_row'
-    'magento_rma'
-    'magento_rma_grid'
-    'magento_rma_status_history'
-    'magento_rma_shipping_label'
-    'magento_rma_item_entity'
-    'quote'
-    'quote_address'
-    'quote_address_item'
-    'quote_id_mask'
-    'quote_item'
-    'quote_item_option'
-    'quote_payment'
-    'quote_shipping_rate'
-)
-
-CUSTOMER_TABLES=(
-    'customer_address_entity'
-    'customer_address_entity_datetime'
-    'customer_address_entity_decimal'
-    'customer_address_entity_int'
-    'customer_address_entity_text'
-    'customer_address_entity_varchar'
-    'customer_entity'
-    'customer_entity_datetime'
-    'customer_entity_decimal'
-    'customer_entity_int'
-    'customer_entity_text'
-    'customer_entity_varchar'
-    'customer_grid_flat'
-    'newsletter_subscriber'
-    'product_alert_price'
-    'product_alert_stock'
-    'vault_payment_token'
-    'vault_payment_token_order_payment_link'
-    'wishlist'
-    'wishlist_item'
-    'wishlist_item_option'
-    'company'
-    'company_advanced_customer_entity'
-    'company_credit'
-    'company_credit_history'
-    'company_order_entity'
-    'company_payment'
-    'company_permissions'
-    'company_roles'
-    'company_shipping'
-    'company_structure'
-    'company_team'
-    'company_user_roles'
-    'amasty_company_account_company'
-    'amasty_company_account_customer'
-    'amasty_company_account_order'
-    'amasty_company_account_permission'
-    'amasty_company_account_role'
-    'amasty_company_credit'
-    'amasty_company_credit_event'
-    'amasty_company_credit_overdraft'
-    'amasty_hideprice_request'
-    'amasty_rewards_customer_balance'
-    'amasty_rewards_history'
-    'amasty_rewards_rewards'
-    'amasty_rewards_status_history'
-    'negotiable_quote_company_config'
-    'purchase_order_company_config'
-    'magento_giftcardaccount'
-    'magento_customerbalance'
-    'magento_customerbalance_history'
-    'magento_customersegment_customer'
-    'magento_reward'
-    'magento_reward_history'
-    'aw_ca_company'
-    'aw_ca_company_domain'
-    'aw_ca_company_payments'
-    'aw_ca_company_requisition_lists'
-    'aw_ca_company_user'
-    'aw_ca_group'
-    'aw_ca_role'
-    'aw_ca_order_approval_state'
-    'aw_cl_credit_summary'
-    'aw_cl_customer_group_credit_limit'
-    'aw_cl_job'
-    'aw_cl_transaction'
-    'aw_cl_transaction_entity'
-    'aw_cp_category_permissions'
-    'aw_cp_cms_page_permissions'
-    'aw_cp_product_permissions'
-    'aw_ctq_comment'
-    'aw_ctq_comment_attachment'
-    'aw_ctq_history'
-    'aw_ctq_quote'
-    'aw_net30_order'
-)
-
-if [[ -n "${PROJECT_IGNORED_SCHEMA+1}" ]]; then
-    IGNORED_SCHEMA+=("${PROJECT_IGNORED_SCHEMA[@]}")
+# Load YAML config (default + project override concatenated, then parsed once)
+anon_cfg=$(mktemp)
+cat "${COMMANDS_DIR}/anonymize.yaml" > "$anon_cfg"
+if [[ -f "${WARDEN_ENV_PATH}/.warden/anonymize.yaml" ]]; then
+    cat "${WARDEN_ENV_PATH}/.warden/anonymize.yaml" >> "$anon_cfg"
 fi
+PARSED_YAML=$(parse_yaml_file "$anon_cfg" "cfg" ".")
+rm -f "$anon_cfg"
 
-if [[ -n "${PROJECT_IGNORED_TABLES+1}" ]]; then
-    IGNORED_TABLES+=("${PROJECT_IGNORED_TABLES[@]}")
-fi
+# Build table arrays from parsed YAML
+# skip: true    → no schema, no data (disposable: _idx, _tmp, _cl, _replica)
+# truncate: true → schema kept, data excluded (sessions, cache, logs, indexes)
+IGNORED_SCHEMA=()
+IGNORED_TABLES=()
+SALES_TABLES=()
+CUSTOMER_TABLES=()
 
-if [[ -n "${PROJECT_SALES_TABLES+1}" ]]; then
-    IGNORED_TABLES+=("${PROJECT_SALES_TABLES[@]}")
-fi
+while IFS= read -r table; do
+    IGNORED_SCHEMA+=("$table")
+    IGNORED_TABLES+=("$table")
+done < <(echo "$PARSED_YAML" | grep "\.skip='true'" | sed "s/^cfgtables\.\(.*\)\.skip=.*/\1/" | sort -u)
 
-if [[ -n "${PROJECT_CUSTOMER_TABLES+1}" ]]; then
-    IGNORED_TABLES+=("${PROJECT_CUSTOMER_TABLES[@]}")
-fi
+while IFS= read -r table; do
+    IGNORED_TABLES+=("$table")
+done < <(echo "$PARSED_YAML" | grep "\.truncate='true'" | sed "s/^cfgtables\.\(.*\)\.truncate=.*/\1/" | sort -u)
 
-IGNORED_TABLES+=("${IGNORED_SCHEMA[@]}")
+while IFS= read -r table; do
+    SALES_TABLES+=("$table")
+done < <(echo "$PARSED_YAML" | grep "\.group='sales'" | sed "s/^cfgtables\.\(.*\)\.group=.*/\1/" | sort -u)
 
-# Remove duplicates
-dedupe_array "${IGNORED_SCHEMA[@]}";
-IGNORED_SCHEMA=("${DEDUPED_RESULT[@]}")
-dedupe_array "${IGNORED_TABLES[@]}";
-IGNORED_TABLES=("${DEDUPED_RESULT[@]}")
+while IFS= read -r table; do
+    CUSTOMER_TABLES+=("$table")
+done < <(echo "$PARSED_YAML" | grep "\.group='customer'" | sed "s/^cfgtables\.\(.*\)\.group=.*/\1/" | sort -u)
 
 ignored_tables=()
 ignored_schema=()
@@ -393,8 +123,8 @@ DUMP_FILENAME=
 INCLUDE_CUSTOMER_DATA=0
 INCLUDE_ORDER_DATA=0
 FULL_DUMP=0
-CUSTOM_EXCLUDE=0
 IMPORT_AFTER=0
+ANONYMIZE=1
 
 while (( "$#" )); do
     case "$1" in
@@ -419,20 +149,12 @@ while (( "$#" )); do
             FULL_DUMP=1
             shift
             ;;
-        --custom-exclude=*)
-            DB_EXCLUDE="${WARDEN_ENV_PATH}/.warden/${1#*=}"
-            if [ -f "${DB_EXCLUDE}" ]; then
-                source "${DB_EXCLUDE}"
-                CUSTOM_EXCLUDE=1
-                FULL_DUMP=0
-            else
-                error "Cannot find file ${1#*=}"
-                exit 1
-            fi
+        --import|-i)
+            IMPORT_AFTER=1
             shift
             ;;
-          --import|-i)
-            IMPORT_AFTER=1
+        --no-anonymize)
+            ANONYMIZE=0
             shift
             ;;
         *)
@@ -452,7 +174,7 @@ if [ -z "$DUMP_FILENAME" ]; then
     DUMP_FILENAME="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
 fi
 
-if [[ "$CUSTOM_EXCLUDE" -eq "0" && "$FULL_DUMP" -eq "0" ]]; then
+if [[ "$FULL_DUMP" -eq "0" ]]; then
     if [[ "$INCLUDE_ORDER_DATA" -eq "0" ]]; then
         IGNORED_TABLES+=("${SALES_TABLES[@]}")
     fi
@@ -468,7 +190,53 @@ else
     dumpCloud
 fi
 
+if [[ "$ANONYMIZE" -eq "1" ]] && [[ "$INCLUDE_CUSTOMER_DATA" -eq "1" || "$INCLUDE_ORDER_DATA" -eq "1" || "$FULL_DUMP" -eq "1" ]]; then
+    echo -e "🔒 \033[1;32mGenerating anonymization SQL ...\033[0m"
+
+    converters_file=$(mktemp)
+    while IFS= read -r line; do
+        stripped="${line#cfgtables.}"
+        table="${stripped%%.*}"
+        rest="${stripped#*.converters.}"
+        column="${rest%%.*}"
+        converter=$(echo "$line" | sed "s/.*='\(.*\)'/\1/")
+        param_val=$(echo "$PARSED_YAML" | grep "^cfgtables\.${table}\.converters\.${column}\.parameters\.value=" | sed "s/.*='\(.*\)'/\1/" | head -1 || true)
+        param_fmt=$(echo "$PARSED_YAML" | grep "^cfgtables\.${table}\.converters\.${column}\.parameters\.formatter=" | sed "s/.*='\(.*\)'/\1/" | head -1 || true)
+        echo "${table}|${column}|${converter}|${param_val}|${param_fmt}"
+    done < <(echo "$PARSED_YAML" | grep '\.converters\.' | grep -v '\.eav_converters\.' | grep '\.converter=' | sort -u) > "$converters_file"
+
+    # Extract EAV converter config: eav_table|entity_type|attribute_code|converter
+    eav_file=$(mktemp)
+    echo "$PARSED_YAML" | grep '\.eav_converters\.[0-9]*\.entity_type=' | sort -u | while IFS= read -r line; do
+        stripped="${line#cfgtables.}"
+        eav_table="${stripped%%.*}"
+        rest="${stripped#*.eav_converters.}"
+        idx="${rest%%.*}"
+        entity_type=$(echo "$line" | sed "s/.*='\(.*\)'/\1/")
+        attr_code=$(echo "$PARSED_YAML" | grep "^cfgtables\.${eav_table}\.eav_converters\.${idx}\.attribute_code=" | sed "s/.*='\(.*\)'/\1/" | head -1 || true)
+        converter=$(echo "$PARSED_YAML" | grep "^cfgtables\.${eav_table}\.eav_converters\.${idx}\.converter=" | sed "s/.*='\(.*\)'/\1/" | head -1 || true)
+        if [[ -n "$attr_code" ]] && [[ -n "$converter" ]]; then
+            echo "${eav_table}|${entity_type}|${attr_code}|${converter}"
+        fi
+    done > "$eav_file"
+
+    anon_sql=$(gunzip -c "$DUMP_FILENAME" \
+        | awk -v prefix="$REMOTE_DB_PREFIX" \
+              -v config_file="$converters_file" \
+              -v eav_file="$eav_file" \
+              -f "$COMMANDS_DIR/anonymize.awk" \
+        2>/dev/null || true)
+
+    rm -f "$converters_file" "$eav_file"
+
+    if [[ -n "$anon_sql" ]]; then
+        printf '%s\n' "$anon_sql" | gzip >> "$DUMP_FILENAME"
+        echo -e "✅ \033[32mAnonymization SQL appended to dump\033[0m"
+    else
+        echo -e "⚠️  \033[33mNo PII columns detected, no anonymization SQL generated\033[0m"
+    fi
+fi
+
 if [[ "$IMPORT_AFTER" -eq "1" ]]; then
   warden import-db "$DUMP_FILENAME"
 fi
-

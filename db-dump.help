@@ -21,7 +21,18 @@ Dump remote database and download it locally. By default, customers, orders and 
 
   -i, --import                 Import the database after dump
 
+  --no-anonymize               Disable automatic PII anonymization.
+                               By default, when customer or order data is
+                               included (-c, -o, or -d), the dump is
+                               automatically anonymized.
+
   -e, --environment=<dev|production|staging>  Specific environment to run a database backup from. Default: staging
+
+\033[33mAnonymization:\033[0m
+  Table exclusions and PII anonymization are configured via YAML:
+    Default:  ~/.warden/commands/anonymize.yaml
+    Project:  .warden/anonymize.yaml (extends/overrides default)
+  See anonymize.yaml for format reference and available converters.
 
 EOF
 )
