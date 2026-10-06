@@ -106,6 +106,16 @@ tables:
     skip: true
   catalogrule_product_replica:
     skip: true
+  magento_catalogpermissions_index_product_replica:
+    skip: true
+  magento_catalogpermissions_index_replica:
+    skip: true
+
+  # Temp tables (Commerce)
+  magento_catalogpermissions_index_product_tmp:
+    skip: true
+  magento_catalogpermissions_index_tmp:
+    skip: true
 
   # ===========================================================================
   # Truncated tables (schema kept, data excluded)
@@ -113,6 +123,10 @@ tables:
 
   # Index tables (main)
   catalog_category_product_index:
+    truncate: true
+  catalog_product_bundle_price_index:
+    truncate: true
+  catalog_product_bundle_stock_index:
     truncate: true
   catalog_compare_item:
     truncate: true
@@ -138,6 +152,26 @@ tables:
     truncate: true
   catalogrule_product_price:
     truncate: true
+  magento_catalogpermissions_index:
+    truncate: true
+  magento_catalogpermissions_index_product:
+    truncate: true
+  magento_targetrule_index:
+    truncate: true
+  magento_targetrule_index_crosssell:
+    truncate: true
+  magento_targetrule_index_crosssell_product:
+    truncate: true
+  magento_targetrule_index_related:
+    truncate: true
+  magento_targetrule_index_related_product:
+    truncate: true
+  magento_targetrule_index_upsell:
+    truncate: true
+  magento_targetrule_index_upsell_product:
+    truncate: true
+  magento_targetrule_product:
+    truncate: true
 
   # Import/export
   importexport_importdata:
@@ -154,6 +188,10 @@ tables:
     skip: true
   cataloginventory_stock_cl:
     skip: true
+  catalogpermissions_category_cl:
+    skip: true
+  catalogpermissions_product_cl:
+    skip: true
   catalogrule_product_cl:
     skip: true
   catalogrule_rule_cl:
@@ -164,7 +202,13 @@ tables:
     skip: true
   sales_order_data_exporter_cl_index_batches:
     skip: true
+  salesrule_rule_cl:
+    skip: true
   store_data_exporter_cl:
+    skip: true
+  targetrule_product_rule_cl:
+    skip: true
+  targetrule_rule_product_cl:
     skip: true
   customer_dummy_cl:
     skip: true
@@ -174,6 +218,10 @@ tables:
     skip: true
 
   # Admin / system tables
+  admin_adobe_ims_webapi:
+    truncate: true
+  admin_analytics_usage_version_log:
+    truncate: true
   admin_passwords:
     truncate: true
   admin_system_messages:
@@ -186,8 +234,14 @@ tables:
     truncate: true
   adminnotification_inbox:
     truncate: true
+  adobe_user_profile:
+    truncate: true
+  design_config_grid_flat:
+    truncate: true
+  tfa_user_config:
+    truncate: true
 
-  # Cache / session / cron
+  # Cache / session / cron / system state
   cache:
     truncate: true
   cache_tag:
@@ -197,6 +251,10 @@ tables:
   core_cache:
     truncate: true
   cron_schedule:
+    truncate: true
+  indexer_state:
+    truncate: true
+  jwt_auth_revoked:
     truncate: true
   persistent_session:
     truncate: true
@@ -212,6 +270,10 @@ tables:
     truncate: true
   customer_visitor:
     truncate: true
+  fastly_statistics:
+    truncate: true
+  import_history:
+    truncate: true
   login_as_customer:
     truncate: true
   magento_acknowledged_bulk:
@@ -225,6 +287,12 @@ tables:
   magento_logging_event_changes:
     truncate: true
   magento_operation:
+    truncate: true
+  magento_reminder_rule_log:
+    truncate: true
+  magento_scheduled_operations:
+    truncate: true
+  magento_versionscms_hierarchy_lock:
     truncate: true
 
   # Newsletter queue
@@ -266,6 +334,8 @@ tables:
     truncate: true
 
   # Reports
+  rating_option_vote_aggregated:
+    truncate: true
   report_event:
     truncate: true
   report_compared_product_index:
@@ -278,11 +348,17 @@ tables:
     truncate: true
   report_viewed_product_index:
     truncate: true
+  reporting_counts:
+    truncate: true
   reporting_module_status:
+    truncate: true
+  reporting_orders:
     truncate: true
   reporting_system_updates:
     truncate: true
   reporting_users:
+    truncate: true
+  review_entity_summary:
     truncate: true
 
   # Sales aggregated
@@ -317,6 +393,18 @@ tables:
   tax_order_aggregated_created:
     truncate: true
   tax_order_aggregated_updated:
+    truncate: true
+
+  # GeoIP reference data
+  inventory_geoname:
+    truncate: true
+
+  # Support (Commerce)
+  support_backup:
+    truncate: true
+  support_backup_item:
+    truncate: true
+  support_report:
     truncate: true
 
   # Search
@@ -688,6 +776,16 @@ tables:
         converter: randomizeText
   magento_rma_item_entity:
     group: sales
+  magento_rma_item_entity_datetime:
+    group: sales
+  magento_rma_item_entity_decimal:
+    group: sales
+  magento_rma_item_entity_int:
+    group: sales
+  magento_rma_item_entity_text:
+    group: sales
+  magento_rma_item_entity_varchar:
+    group: sales
 
   # Archive grids (Commerce)
   magento_sales_order_grid_archive:
@@ -757,6 +855,95 @@ tables:
         converter: randomizeText
       shipping_information:
         converter: randomizeText
+
+  # Braintree
+  braintree_transaction_details:
+    group: sales
+
+  # Custom customer attributes on sales documents (Commerce)
+  magento_customercustomattributes_sales_flat_order:
+    group: sales
+  magento_customercustomattributes_sales_flat_order_address:
+    group: sales
+  magento_customercustomattributes_sales_flat_quote:
+    group: sales
+  magento_customercustomattributes_sales_flat_quote_address:
+    group: sales
+
+  # Negotiable quotes (B2B)
+  negotiable_quote:
+    group: sales
+    converters:
+      snapshot:
+        converter: setNull
+
+  negotiable_quote_comment:
+    group: sales
+    converters:
+      comment:
+        converter: setNull
+
+  negotiable_quote_comment_attachment:
+    group: sales
+
+  negotiable_quote_grid:
+    group: sales
+    converters:
+      company_name:
+        converter: randomizeText
+      submitted_by:
+        converter: randomizeText
+      sales_rep:
+        converter: randomizeText
+
+  negotiable_quote_history:
+    group: sales
+    converters:
+      log_data:
+        converter: setNull
+      snapshot_data:
+        converter: setNull
+
+  negotiable_quote_item:
+    group: sales
+
+  negotiable_quote_purged_content:
+    group: sales
+    converters:
+      purged_data:
+        converter: setNull
+
+  # Purchase orders (B2B)
+  purchase_order:
+    group: sales
+    converters:
+      snapshot:
+        converter: setNull
+
+  purchase_order_applied_rule:
+    group: sales
+
+  purchase_order_applied_rule_approver:
+    group: sales
+
+  purchase_order_approved_by:
+    group: sales
+
+  purchase_order_comment:
+    group: sales
+    converters:
+      comment:
+        converter: setValue
+        parameters:
+          value: ''
+
+  purchase_order_log:
+    group: sales
+
+  # Quote preview
+  quote_preview:
+    group: sales
+
 
   # ===========================================================================
   # Customer tables (excluded by default, included with -c)
@@ -929,9 +1116,18 @@ tables:
   purchase_order_company_config:
     group: customer
 
+  # Login as customer
+  login_as_customer_assistance_allowed:
+    group: customer
+
   # Commerce features
   magento_giftcardaccount:
     group: customer
+  magento_giftcardaccount_history:
+    group: customer
+    converters:
+      additional_info:
+        converter: setNull
   magento_customerbalance:
     group: customer
   magento_customerbalance_history:
@@ -941,6 +1137,72 @@ tables:
   magento_reward:
     group: customer
   magento_reward_history:
+    group: customer
+
+  # Gift registry (Commerce)
+  magento_giftregistry_data:
+    group: customer
+    converters:
+      event_location:
+        converter: randomizeText
+  magento_giftregistry_entity:
+    group: customer
+    converters:
+      shipping_address:
+        converter: setNull
+      message:
+        converter: setValue
+        parameters:
+          value: ''
+      custom_values:
+        converter: setNull
+  magento_giftregistry_item:
+    group: customer
+  magento_giftregistry_item_option:
+    group: customer
+  magento_giftregistry_person:
+    group: customer
+    converters:
+      email:
+        converter: randomizeEmail
+      firstname:
+        converter: randomizeText
+      lastname:
+        converter: randomizeText
+      custom_values:
+        converter: setValue
+        parameters:
+          value: ''
+
+  # Invitations (Commerce)
+  magento_invitation:
+    group: customer
+    converters:
+      email:
+        converter: randomizeEmail
+      message:
+        converter: setNull
+  magento_invitation_status_history:
+    group: customer
+  magento_invitation_track:
+    group: customer
+
+  # Reminder coupons (Commerce)
+  magento_reminder_rule_coupon:
+    group: customer
+
+  # Purchase order rules (B2B)
+  purchase_order_rule:
+    group: customer
+  purchase_order_rule_applies_to:
+    group: customer
+  purchase_order_rule_approver:
+    group: customer
+
+  # Requisition lists (B2B)
+  requisition_list:
+    group: customer
+  requisition_list_item:
     group: customer
 
   # ===========================================================================
