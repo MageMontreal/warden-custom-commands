@@ -68,8 +68,14 @@ return [
 EOT
 fi
 if [[ "$WARDEN_REDIS" -eq "1" ]]; then
-  :: Flush Redis
-  warden redis flushall
+    REDIS_SERVICE=redis
+elif [[ "$WARDEN_VALKEY" -eq "1" ]]; then
+    REDIS_SERVICE=valkey
+fi
+
+if [[ -n "${REDIS_SERVICE:-}" ]]; then
+    :: Flushing ${REDIS_SERVICE}
+    warden "${REDIS_SERVICE}" flushall
 fi
 
 :: Importing config
@@ -111,12 +117,12 @@ if [[ "$WARDEN_ELASTICSEARCH" -eq "1" ]] || [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; 
     ::: Done
 fi
 
-if [[ "$WARDEN_REDIS" -eq "1" ]]; then
-    :: Configuring Redis
-    warden redis flushall
-    warden env exec php-fpm bin/magento setup:config:set -q --cache-backend=redis --cache-backend-redis-server=redis --cache-backend-redis-db=0 --cache-backend-redis-port=6379 --no-interaction
-    warden env exec php-fpm bin/magento setup:config:set -q --page-cache=redis --page-cache-redis-server=redis --page-cache-redis-db=1 --page-cache-redis-port=6379 --no-interaction
-    warden env exec php-fpm bin/magento setup:config:set -q --session-save=redis --session-save-redis-host=redis --session-save-redis-max-concurrency=20 --session-save-redis-db=2 --session-save-redis-port=6379 --no-interaction
+if [[ -n "${REDIS_SERVICE:-}" ]]; then
+    :: Configuring ${REDIS_SERVICE}
+    warden "${REDIS_SERVICE}" flushall
+    warden env exec php-fpm bin/magento setup:config:set -q --cache-backend="${REDIS_SERVICE}" --cache-backend-"${REDIS_SERVICE}"-server="${REDIS_SERVICE}" --cache-backend-"${REDIS_SERVICE}"-db=0 --cache-backend-"${REDIS_SERVICE}"-port=6379 --no-interaction
+    warden env exec php-fpm bin/magento setup:config:set -q --page-cache="${REDIS_SERVICE}" --page-cache-"${REDIS_SERVICE}"-server="${REDIS_SERVICE}" --page-cache-"${REDIS_SERVICE}"-db=1 --page-cache-"${REDIS_SERVICE}"-port=6379 --no-interaction
+    warden env exec php-fpm bin/magento setup:config:set -q --session-save="${REDIS_SERVICE}" --session-save-"${REDIS_SERVICE}"-host="${REDIS_SERVICE}" --session-save-"${REDIS_SERVICE}"-max-concurrency=20 --session-save-"${REDIS_SERVICE}"-db=2 --session-save-"${REDIS_SERVICE}"-port=6379 --no-interaction
     ::: Done
 fi
 
